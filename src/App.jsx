@@ -17,20 +17,13 @@ function App() {
         {/* <Route path='/on-boarding' element={<OnBoarding />} /> */}
         <Route path='/login' element={<Login />} />
         <Route path='/sign-up' element={<Signup />} />
-        {/* <Route
-          path='/'
-          element={
-            <ProtectedRoute>
-              <Layout />
-            </ProtectedRoute>
-          }
-        >
+        <Route path='/' element={<Layout />}>
           <Route index element={<Home />} />
           <Route path='mark-attendance' element={<AttendanceMarking />} />
           <Route path='students' element={<Students />} />
           <Route path='complaints' element={<Complaints />} />
           <Route path='exams' element={<Exams />} />
-        </Route> */}
+        </Route>
         <Route path='/' element={<OnBoarding />} />
       </Routes>
     </Router>

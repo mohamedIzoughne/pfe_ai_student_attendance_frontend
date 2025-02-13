@@ -1,7 +1,7 @@
 import { Label } from '@radix-ui/react-label'
 import backgroundImage from '../assets/images/onboarding-side-bg.png'
 import React from 'react'
-import { useRef } from 'react'
+import { useRef, useReducer } from 'react'
 // import ProgressBar from '../components/UI/ProgressBar'
 // import progressBar from '../components/UI/ProgressBar'
 // import {Button} from 'shadcn-ui'
@@ -29,7 +29,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { Check, ChevronsUpDown, Camera } from 'lucide-react'
+import { Check, ChevronsUpDown, Camera, Type } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 
 import { cn } from '@/lib/utils'
@@ -72,6 +72,51 @@ const schools = [
     label: 'EST guelmim',
   },
 ]
+
+const initialState = {
+  firstName: '',
+  lastName: '',
+  image: '',
+  email: '',
+  phoneNumber: 0,
+  gender: '',
+  hometown: '',
+  school: '',
+  city: '',
+  role: 'student',
+  profileImage: null,
+}
+
+const reducer = (state, action) => {
+  switch (action.type) {
+    case 'SET_FORM_DATA':
+      return { ...state, ...action.payload }
+    case 'SET_FIRST_NAME':
+      return { ...state, firstName: action.payload }
+    case 'SET_LAST_NAME':
+      return { ...state, lastName: action.payload }
+    case 'SET_IMAGE':
+      return { ...state, image: action.payload }
+    case 'SET_EMAIL':
+      return { ...state, email: action.payload }
+    case 'SET_PHONE_NUMBER':
+      return { ...state, phoneNumber: action.payload }
+    case 'SET_GENDER':
+      return { ...state, gender: action.payload }
+    case 'SET_HOMETOWN':
+      return { ...state, hometown: action.payload }
+    case 'SET_SCHOOL':
+      return { ...state, school: action.payload }
+    case 'SET_CITY':
+      return { ...state, city: action.payload }
+    case 'SET_ROLE':
+      return { ...state, role: action.payload }
+    case 'SET_PROFILE_IMAGE':
+      return { ...state, role: action.profileImage }
+    default:
+      return state
+  }
+}
 
 function SchoolsComboBox() {
   const [open, setOpen] = React.useState(false)
@@ -125,11 +170,12 @@ function SchoolsComboBox() {
 }
 
 const Box = ({ id, isActive, children }) => {
+  console.log(id, isActive)
   return (
     <div
       className={`flex items-center space-x-2 w-56 pl-3  font-medium border-[1px] border-solid rounded-sm  ${
         isActive
-          ? ' bg-[#4880FF] bg-opacity-15 border-[#4880FF]'
+          ? ' bg-[rgb(72,128,255)] bg-opacity-15 border-[#4880FF]'
           : ' border-[#F4F4F4] '
       }`}
     >
@@ -141,8 +187,10 @@ const Box = ({ id, isActive, children }) => {
   )
 }
 
-const RoleScreen = () => {
-  const [selectedRoleOption, setSelectedRoleOption] = useState('option-one')
+const RoleScreen = ({ dispatch, role }) => {
+  const handleRoleOptionChange = (value) => {
+    dispatch({ type: 'SET_ROLE', payload: value })
+  }
 
   return (
     <section className='pl-9 min-h-[500px]'>
@@ -159,21 +207,18 @@ const RoleScreen = () => {
       <div className='mt- mt-8'>
         <RadioGroup
           className='flex  items-center flex-wrap'
-          onValueChange={(value) => setSelectedRoleOption(value)}
-          defaultValue='option-one'
+          onValueChange={handleRoleOptionChange}
+          defaultValue={role}
         >
-          <Box id='option-one' isActive={selectedRoleOption === 'option-one'}>
+          <Box id='student' isActive={role === 'student'}>
             I&apos;m a student learning, completing assignments, and staying
             organized.
           </Box>
-          <Box id='option-two' isActive={selectedRoleOption === 'option-two'}>
+          <Box id='teacher' isActive={role === 'teacher'}>
             I&apos;m a teacher managing classes, tracking progress, and
-            accessing resouvces!
+            accessing resources!
           </Box>
-          <Box
-            id='option-three'
-            isActive={selectedRoleOption === 'option-three'}
-          >
+          <Box id='admin' isActive={role === 'admin'}>
             I&apos;m an admin managing users, overseeing operations, and
             ensuring smooth workflow
           </Box>
@@ -183,14 +228,20 @@ const RoleScreen = () => {
   )
 }
 
-const SchoolScreen = () => {
-  const [selectedCity, setSelectedCity] = useState('')
-  const [schoolName, setSchoolName] = useState('')
+const SchoolScreen = ({ dispatch, school, city }) => {
+  const handleSchoolNameChange = (e) => {
+    console.log(e.target.value)
+    dispatch({ type: 'SET_SCHOOL', payload: e.target.value })
+  }
+
+  const handleCityChange = (value) => {
+    console.log(value)
+    dispatch({ type: 'SET_CITY', payload: value })
+  }
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    // Handle the submission logic
-    console.log(`City: ${selectedCity}, School: ${schoolName}`)
+    // console.log(`City: ${selectedCity}, School: ${schoolName}`)
   }
 
   return (
@@ -202,7 +253,7 @@ const SchoolScreen = () => {
         </p>
       </div>
       <div>
-        <Select>
+        <Select onValueChange={handleCityChange}>
           <SelectTrigger className='w-[300px] mt-5 mb-3'>
             <SelectValue placeholder='City' />
           </SelectTrigger>
@@ -234,8 +285,8 @@ const SchoolScreen = () => {
                   </Label>
                   <Select
                     id='city'
-                    value={selectedCity}
-                    onValueChange={setSelectedCity}
+                    value={city}
+                    onValueChange={handleCityChange}
                     required
                   >
                     <SelectTrigger>
@@ -256,8 +307,8 @@ const SchoolScreen = () => {
                   </Label>
                   <Input
                     id='school-name'
-                    value={schoolName}
-                    onChange={(e) => setSchoolName(e.target.value)}
+                    value={school}
+                    onChange={handleSchoolNameChange}
                     placeholder='Enter school name'
                     required
                   />
@@ -283,9 +334,8 @@ const SchoolScreen = () => {
   )
 }
 
-const UserProfileScreen = () => {
+const UserProfileScreen = ({ dispatch, state }) => {
   const fileInputRef = useRef(null)
-  const [imagePreview, setImagePreview] = useState(null)
   const [showError, setShowError] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
 
@@ -344,13 +394,18 @@ const UserProfileScreen = () => {
     fileInputRef.current?.click()
   }
 
+  const handleImageChange = (imagePreview) => {
+    dispatch({ type: 'SET_IMAGE_PREVIEW', payload: imagePreview })
+  }
+
   const handleFileChange = (event) => {
     const file = event.target.files?.[0]
     if (file) {
       form.setValue('profileImage', file)
       const reader = new FileReader()
       reader.onloadend = () => {
-        setImagePreview(reader.result)
+        handleImageChange(reader.result)
+        dispatch({ type: 'SET_PROFILE_IMAGE', payload: file })
       }
       reader.readAsDataURL(file)
     }
@@ -358,12 +413,28 @@ const UserProfileScreen = () => {
 
   const onSubmit = async (data) => {
     try {
+      dispatch({
+        type: 'SET_FORM_DATA',
+        payload: {
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          phone: data.phone,
+          hometown: data.hometown,
+          gender: data.gender,
+        },
+      })
+
       const formData = new FormData()
       Object.keys(data).forEach((key) => {
         if (data[key]) {
           formData.append(key, data[key])
         }
       })
+
+      formData.append('city', state.city)
+      formData.append('school', state.school)
+      formData.append('role', state.role)
 
       const response = await fetch('/api/profile', {
         method: 'POST',
@@ -396,9 +467,9 @@ const UserProfileScreen = () => {
                 accept='image/*'
               />
               <div className='w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden'>
-                {imagePreview ? (
+                {state?.imageProfile ? (
                   <img
-                    src={imagePreview}
+                    src={state?.imageProfile}
                     alt='Profile'
                     className='w-full h-full object-cover'
                   />
@@ -530,6 +601,7 @@ const UserProfileScreen = () => {
 }
 const OnBoarding = () => {
   const [step, setStep] = useState(1)
+  const [state, dispatch] = useReducer(reducer, initialState)
 
   const handleNextStep = () => {
     setStep((step) => {
@@ -576,11 +648,15 @@ const OnBoarding = () => {
 
         <div className='w-full min-h-[600px]'>
           {step === 1 ? (
-            <RoleScreen />
+            <RoleScreen dispatch={dispatch} role={state.role} />
           ) : step === 2 ? (
-            <SchoolScreen />
+            <SchoolScreen
+              dispatch={dispatch}
+              school={state.school}
+              city={state.city}
+            />
           ) : (
-            <UserProfileScreen />
+            <UserProfileScreen dispatch={dispatch} state={state} />
           )}
         </div>
 
