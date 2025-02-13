@@ -3,7 +3,7 @@ import { Check } from 'lucide-react'
 
 const ProgressBar = ({ step, className }) => {
   return (
-    <div className={'flex items-center w-[500px] ' + className}>
+    <div className={'flex items-center min-w-[300px] w-[70%] ' + className}>
       {/* First Step */}
       <div
         className={`w-5 h-5 flex items-center justify-center rounded-full border-2 ${
