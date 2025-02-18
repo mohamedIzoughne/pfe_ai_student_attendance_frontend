@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Bell } from 'lucide-react'
-import './Students.css'
+import '../Students.css'
 import { ComboboxDemo } from '@/components/ui/ComboboxDemo'
 
 import manImage4 from '@/assets/images/man-438081_960_720.png'
