@@ -34,7 +34,13 @@ const SidebarItem = ({ title, path }) => {
           isActive ? 'bg-primary text-white' : ''
         }`}
       >
-        {Icon && <Icon className={`${isActive ? 'text-white' : ''} mr-3`} />}
+        {Icon && (
+          <Icon
+            className={`${
+              isActive ? 'stroke-white text-white fill-white' : ''
+            } mr-3`}
+          />
+        )}
         {title}
       </Link>
     </li>
