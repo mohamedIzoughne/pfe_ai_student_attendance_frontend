@@ -4,7 +4,7 @@ export const Context = createContext()
 
 const initialState = {
   name: '',
-  role: 'student',
+  role: 'admin',
   email: '',
   phoneNumber: 0,
   hometown: '',

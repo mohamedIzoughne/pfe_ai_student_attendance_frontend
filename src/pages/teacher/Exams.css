@@ -1,0 +1,73 @@
+
+.buttons {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+    margin-right: 21px;
+}
+
+.buttons div {
+    margin-right: 10px;
+}
+
+
+.buttons .btn1 {
+    background-color: white;
+    padding: 5.5px 15px;
+    color: #848485;
+    border-radius: 5px ;
+}
+
+.container-exams  {
+   
+    width: 290px;
+    height: 180px;
+    background-color: white;
+    padding: 20px;
+    margin-top: 40px;
+    border-radius: 5px;
+    margin-right: 20px;
+}
+
+.container-exams .carte {
+    display: flex;
+    justify-content: space-between;
+} 
+
+.container-exams .More-date {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+}
+
+.container-exams .More-date p {
+    color: #3D3D3D;
+    font-size: 12.21px;
+}
+
+
+.container-exams  div h5 {
+    font-size: 18px;
+    color: #000000;
+}
+
+.container-exams  div h1 {
+    font-size: 25px;
+    font-weight: bold;
+    color: #000000;
+}
+
+.container-exams .two span {
+color: #676767;
+display: inline-block;
+margin-top: 18px;
+}
+.container-exams .two .trois {
+    opacity: 50%;
+    cursor: pointer;
+}
+
+.Principal {
+    display: flex;
+    flex-wrap: wrap;
+}

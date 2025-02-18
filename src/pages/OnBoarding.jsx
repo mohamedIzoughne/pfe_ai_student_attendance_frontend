@@ -53,6 +53,7 @@ import { useForm } from 'react-hook-form'
 import { AlertCircle } from 'lucide-react'
 import { Alert, AlertTitle, AlertDescription } from '@/components/UI/alert'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useCreateSchool } from '@/api/curriculumApi'
 
 const schools = [
   {
@@ -229,6 +230,8 @@ const RoleScreen = ({ dispatch, role }) => {
 }
 
 const SchoolScreen = ({ dispatch, school, city }) => {
+  const mutation = useCreateSchool()
+
   const handleSchoolNameChange = (e) => {
     console.log(e.target.value)
     dispatch({ type: 'SET_SCHOOL', payload: e.target.value })
@@ -242,6 +245,19 @@ const SchoolScreen = ({ dispatch, school, city }) => {
   const handleSubmit = (e) => {
     e.preventDefault()
     // console.log(`City: ${selectedCity}, School: ${schoolName}`)
+    const formData = {
+      name: school,
+      city,
+    }
+    console.log(formData)
+    mutation.mutate(formData, {
+      onSuccess: () => {
+        console.log('success')
+      },
+      onError: (error) => {
+        console.log(error)
+      },
+    })
   }
 
   return (
@@ -293,9 +309,9 @@ const SchoolScreen = ({ dispatch, school, city }) => {
                       <SelectValue placeholder='Select a city' />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value='new-york'>New York</SelectItem>
-                      <SelectItem value='los-angeles'>Los Angeles</SelectItem>
-                      <SelectItem value='chicago'>Chicago</SelectItem>
+                      <SelectItem value='agadir'>Agadir</SelectItem>
+                      <SelectItem value='casablanca'>Casablanca</SelectItem>
+                      <SelectItem value='marrakech'>Marrakech</SelectItem>
                       {/* Add more cities here */}
                     </SelectContent>
                   </Select>

@@ -1,30 +1,28 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { useContext } from 'react'
+import { routes, authRoutes } from './routes'
 import Layout from './components/Layout'
-import Home from './pages/Home'
-import AttendanceMarking from './pages/AttendanceMarking'
-import Complaints from './pages/Complaints'
-import Exams from './pages/Exams'
-import Students from './pages/Students'
-import Login from './pages/Login'
-import Signup from './pages/Signup'
-import ProtectedRoute from './components/ProtectedRoute'
-import OnBoarding from './pages/OnBoarding'
+import { Context } from './store'
 
 function App() {
+  const { userConfiguration } = useContext(Context)
+  const userRole = userConfiguration?.role
+
   return (
     <Router>
       <Routes>
-        {/* <Route path='/on-boarding' element={<OnBoarding />} /> */}
-        <Route path='/login' element={<Login />} />
-        <Route path='/sign-up' element={<Signup />} />
+        {authRoutes.map(({ path, element }) => (
+          <Route key={path} path={path} element={element} />
+        ))}
+
+        {/* Protected routes based on role */}
         <Route path='/' element={<Layout />}>
-          <Route index element={<Home />} />
-          <Route path='mark-attendance' element={<AttendanceMarking />} />
-          <Route path='students' element={<Students />} />
-          <Route path='complaints' element={<Complaints />} />
-          <Route path='exams' element={<Exams />} />
+          {routes
+            .filter((route) => route.roles.includes(userRole))
+            .map(({ path, element }) => (
+              <Route key={path} path={path} element={element} />
+            ))}
         </Route>
-        <Route path='/' element={<OnBoarding />} />
       </Routes>
     </Router>
   )
