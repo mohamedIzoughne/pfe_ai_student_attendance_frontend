@@ -85,11 +85,11 @@ const Exams = () => {
 
         <div>
           {" "}
-          <ComboboxDemo />
+          <ComboboxDemo placeholder="Select Subject" />
         </div>
         <div>
           {" "}
-          <ComboboxDemo />
+          <ComboboxDemo placeholder="Select Class" />
         </div>
         <button className="btn1">+</button>
       </div>

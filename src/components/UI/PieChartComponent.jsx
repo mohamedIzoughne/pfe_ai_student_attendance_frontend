@@ -1,19 +1,6 @@
 import React, { useCallback, useState } from "react";
 import { PieChart, Pie, Sector, Cell } from "recharts";
 
-
-// const data = [
-//   { name: "Group A", value: 400 },
-//   { name: "Group B", value: 300 },
-//   { name: "Group C", value: 300 },
-//   { name: "Group D", value: 200 }
-// ];
-
-const data = [
-  { name: "Partie 1", value: 50, color: "#FF9066" }, // Rouge
-  { name: "Partie 2", value: 50, color: "#8280FF" }  // Vert
-];
-
 const renderActiveShape = (props) => {
   const RADIAN = Math.PI / 180;
   const {
@@ -47,31 +34,41 @@ const renderActiveShape = (props) => {
   );
 };
 
-const PieChartComponent = () => {
+const PieChartComponent = ({
+  width = 400,
+  height = 310,
+  innerRadius = 60,
+  outerRadius = 80,
+  colors = ["#FF9066", "#8280FF"]
+}) => {
   const [activeIndex, setActiveIndex] = useState(0);
-  
+
   const onPieEnter = useCallback((_, index) => {
     setActiveIndex(index);
   }, []);
 
-  return (
-    <PieChart width={400} height={400}>
-      <Pie
-  activeIndex={activeIndex}
-  activeShape={renderActiveShape}
-  data={data}
-  cx="44%"
-  cy="33%"
-  innerRadius={60}
-  outerRadius={80}
-  dataKey="value"
-  onMouseEnter={onPieEnter}
->
-  {data.map((entry, index) => (
-    <Cell key={`cell-${index}`} fill={entry.color} />
-  ))}
-</Pie>
+  const data = [
+    { name: "Partie 1", value: 50 },
+    { name: "Partie 2", value: 50 }
+  ];
 
+  return (
+    <PieChart width={width} height={height}>
+      <Pie
+        activeIndex={activeIndex}
+        activeShape={renderActiveShape}
+        data={data}
+        cx="50%"
+        cy="50%"
+        innerRadius={innerRadius}
+        outerRadius={outerRadius}
+        dataKey="value"
+        onMouseEnter={onPieEnter}
+      >
+        {data.map((_, index) => (
+          <Cell key={`cell-${index}`} fill={colors[index] || "#ccc"} />
+        ))}
+      </Pie>
     </PieChart>
   );
 };

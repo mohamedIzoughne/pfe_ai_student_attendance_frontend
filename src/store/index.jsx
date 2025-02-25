@@ -9,7 +9,8 @@ const initialState = {
   phoneNumber: 0,
   hometown: '',
   gender: 'male',
-  image: '',
+  profileImage: '',
+  schoolId: '',
 }
 
 export const ContextProvider = ({ children }) => {
@@ -43,6 +44,10 @@ export const ContextProvider = ({ children }) => {
     setUserConfiguration((prev) => ({ ...prev, image }))
   }
 
+  const schoolIdHandler = (schoolId) => {
+    setUserConfiguration((prev) => ({ ...prev, schoolId }))
+  }
+
   return (
     <Context.Provider
       value={{
@@ -54,6 +59,7 @@ export const ContextProvider = ({ children }) => {
         hometownHandler,
         genderHandler,
         imageHandler,
+        schoolIdHandler,
       }}
     >
       {children}

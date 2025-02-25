@@ -1,50 +1,29 @@
 import { SignUp, useUser } from '@clerk/clerk-react'
-import { useState } from 'react';
+import { useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
+import { useCreateUser } from '@/api/UsersApi'
 
 const SignUpPage = () => {
-  const {user} = useUser()
-  const [formData, setFormData] = useState({
-    name: "Moha",
-    gender: "Male",
-    hometown: "Taznakht",
-    image: "",
-    role: "student",
-  });
+  const { user } = useUser()
+  const location = useLocation()
+  const data = location.state
+  const createUser = useCreateUser()
 
+  // ✅ Prevent multiple requests by tracking submission
+  const [hasSubmitted, setHasSubmitted] = useState(false)
 
-  if (user) {
-    const sendDataToBackend = async () => {
-      try {
-        const response = await fetch("http://localhost:5000/auth/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            ...formData,
-            email: user.primaryEmailAddress.emailAddress,
-            clerk_id: user.id,
-          }),
-        });
+  console.log('The data', data)
 
-        if (response.ok) {
-          console.log("User registered successfully");
-        } else {
-          console.error("Failed to register user");
-        }
-      } catch (error) {
-        console.error("Error:", error);
-      }
-    };
-
-    sendDataToBackend();
-
-  }
-
-
+  useEffect(() => {
+    if (user && !hasSubmitted) {
+      createUser.mutate({ ...data, clerkId: user.id })
+      setHasSubmitted(true) // ✅ Prevent duplicate submissions
+    }
+  }, [user, hasSubmitted, createUser, data])
 
   return (
     <div className='flex justify-center mt-20'>
       <SignUp
-        
         appearance={{
           variables: {
             colorPrimary: '#4880FF',
@@ -55,7 +34,6 @@ const SignUpPage = () => {
             },
           },
         }}
-        
         signInUrl='/login'
         fallbackRedirectUrl='/'
       />

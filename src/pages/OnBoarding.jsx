@@ -1,6 +1,6 @@
 import { Label } from '@radix-ui/react-label'
 import backgroundImage from '../assets/images/onboarding-side-bg.png'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useRef, useReducer } from 'react'
 // import ProgressBar from '../components/UI/ProgressBar'
 // import progressBar from '../components/UI/ProgressBar'
@@ -10,7 +10,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { IoArrowForward } from 'react-icons/io5'
 import { MdOutlineArrowBackIos } from 'react-icons/md'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import {
   Select,
   SelectContent,
@@ -53,39 +53,24 @@ import { useForm } from 'react-hook-form'
 import { AlertCircle } from 'lucide-react'
 import { Alert, AlertTitle, AlertDescription } from '@/components/UI/alert'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useCreateSchool } from '@/api/curriculumApi'
-
-const schools = [
-  {
-    value: 'esta',
-    label: 'EST Agadir',
-  },
-  {
-    value: 'enset',
-    label: 'ENSET Mohammedia',
-  },
-  {
-    value: 'fst',
-    label: 'FST Marrakech',
-  },
-  {
-    value: 'estg',
-    label: 'EST guelmim',
-  },
-]
+import { useCreateSchool, getSchools, useGetCities } from '@/api/curriculumApi'
+import { useCreateUser } from '@/api/UsersApi'
+import { useContext } from 'react'
+import { Context } from '@/store'
+import ImageCropper from './ImageCropper'
 
 const initialState = {
   firstName: '',
   lastName: '',
-  image: '',
+  profileImage: null,
   email: '',
-  phoneNumber: 0,
+  phoneNumber: '',
   gender: '',
   hometown: '',
   school: '',
   city: '',
   role: 'student',
-  profileImage: null,
+  schoolId: undefined,
 }
 
 const reducer = (state, action) => {
@@ -108,6 +93,8 @@ const reducer = (state, action) => {
       return { ...state, hometown: action.payload }
     case 'SET_SCHOOL':
       return { ...state, school: action.payload }
+    case 'SET_SCHOOL_ID':
+      return { ...state, schoolId: action.payload }
     case 'SET_CITY':
       return { ...state, city: action.payload }
     case 'SET_ROLE':
@@ -119,9 +106,9 @@ const reducer = (state, action) => {
   }
 }
 
-function SchoolsComboBox() {
-  const [open, setOpen] = React.useState(false)
-  const [value, setValue] = React.useState('')
+function SchoolsComboBox({ schools = [], handleSelectSchoolNameChange }) {
+  const [open, setOpen] = useState(false)
+  const [value, setValue] = useState('')
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -133,7 +120,7 @@ function SchoolsComboBox() {
           className='w-[300px] justify-between'
         >
           {value
-            ? schools.find((school) => school.value === value)?.label
+            ? schools.find((school) => school.name === value)?.name
             : 'Select your school'}
           <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
         </Button>
@@ -146,23 +133,24 @@ function SchoolsComboBox() {
             <CommandGroup>
               {schools.map((school) => (
                 <CommandItem
-                  key={school.value}
-                  value={school.value}
+                  key={school.id}
+                  value={school.name}
                   onSelect={(currentValue) => {
                     setValue(currentValue === value ? '' : currentValue)
+                    handleSelectSchoolNameChange(school.id)
                     setOpen(false)
                   }}
                 >
                   <Check
                     className={cn(
                       'mr-2 h-4 w-4',
-                      value === school.value ? 'opacity-100' : 'opacity-0'
+                      value === school.name ? 'opacity-100' : 'opacity-0'
                     )}
                   />
-                  {school.label}
+                  {school.name}
                 </CommandItem>
               ))}
-            </CommandGroup>
+            </CommandGroup>{' '}
           </CommandList>
         </Command>
       </PopoverContent>
@@ -229,30 +217,61 @@ const RoleScreen = ({ dispatch, role }) => {
   )
 }
 
-const SchoolScreen = ({ dispatch, school, city }) => {
+const SchoolScreen = ({ dispatch, school, isAdmin, handleNextStep }) => {
   const mutation = useCreateSchool()
+  const { data: cities } = useGetCities()
+  const [schools, setSchools] = useState([])
+  const [selectedCity, setSelectedCity] = useState('')
+  const [isOpen, setIsOpen] = useState(false)
+  const [newCity, setNewCity] = useState('')
+  const ctx = useContext(Context)
+
+  useEffect(() => {
+    const fetchSchools = async () => {
+      console.log('The selected city:', selectedCity)
+      try {
+        const response = await getSchools(selectedCity)
+        setSchools(response)
+      } catch (error) {
+        console.error('Error fetching schools:', error)
+      }
+    }
+
+    if (!isOpen && selectedCity) {
+      fetchSchools()
+    }
+  }, [selectedCity, isOpen])
 
   const handleSchoolNameChange = (e) => {
     console.log(e.target.value)
     dispatch({ type: 'SET_SCHOOL', payload: e.target.value })
+    ctx.schoolIdHandler(e.target.value)
+  }
+
+  const handleSelectSchoolNameChange = (value) => {
+    console.log('Value', value)
+    dispatch({ type: 'SET_SCHOOL_ID', payload: value })
   }
 
   const handleCityChange = (value) => {
-    console.log(value)
+    // console.log(value)
     dispatch({ type: 'SET_CITY', payload: value })
+    setSelectedCity(value)
   }
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    // console.log(`City: ${selectedCity}, School: ${schoolName}`)
     const formData = {
       name: school,
-      city,
+      city: newCity,
     }
     console.log(formData)
+
     mutation.mutate(formData, {
       onSuccess: () => {
         console.log('success')
+        setIsOpen(false)
+        handleNextStep()
       },
       onError: (error) => {
         console.log(error)
@@ -274,75 +293,73 @@ const SchoolScreen = ({ dispatch, school, city }) => {
             <SelectValue placeholder='City' />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value='agadir'>Agadir</SelectItem>
-            <SelectItem value='casablanca'>Casablanca</SelectItem>
-            <SelectItem value='marrakech'>Marrakech</SelectItem>
+            {cities?.map((city) => (
+              <SelectItem key={city} value={city}>
+                {city}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <div className='flex'>
-          <SchoolsComboBox />
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant='outline' className='ml-2'>
-                Add school
-              </Button>
-            </DialogTrigger>
-            <DialogContent className='sm:max-w-md'>
-              <DialogHeader>
-                <DialogTitle>Add a School</DialogTitle>
-                <DialogDescription>
-                  Select a city and enter the school name to add it.
-                </DialogDescription>
-              </DialogHeader>
-              <form onSubmit={handleSubmit}>
-                <div className='mb-4'>
-                  <Label htmlFor='city' className='block'>
-                    Choose a city
-                  </Label>
-                  <Select
-                    id='city'
-                    value={city}
-                    onValueChange={handleCityChange}
-                    required
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder='Select a city' />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value='agadir'>Agadir</SelectItem>
-                      <SelectItem value='casablanca'>Casablanca</SelectItem>
-                      <SelectItem value='marrakech'>Marrakech</SelectItem>
-                      {/* Add more cities here */}
-                    </SelectContent>
-                  </Select>
-                </div>
+          <SchoolsComboBox
+            handleSelectSchoolNameChange={handleSelectSchoolNameChange}
+            schools={schools}
+          />
+          {isAdmin && (
+            <Dialog open={isOpen} onOpenChange={setIsOpen}>
+              <DialogTrigger asChild>
+                <Button variant='outline' className='ml-2'>
+                  Add school
+                </Button>
+              </DialogTrigger>
+              <DialogContent className='sm:max-w-md'>
+                <DialogHeader>
+                  <DialogTitle>Add a School</DialogTitle>
+                  <DialogDescription>
+                    Select a city and enter the school name to add it.
+                  </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleSubmit}>
+                  <div className='mb-4'>
+                    <Label htmlFor='city' className='block'>
+                      Choose a city
+                    </Label>
+                    <Input
+                      id='city-name'
+                      value={newCity}
+                      onChange={(e) => setNewCity(e.target.value)}
+                      placeholder='Enter city name'
+                      required
+                    />
+                  </div>
 
-                <div className='mb-4'>
-                  <Label htmlFor='school-name' className='block'>
-                    School Name
-                  </Label>
-                  <Input
-                    id='school-name'
-                    value={school}
-                    onChange={handleSchoolNameChange}
-                    placeholder='Enter school name'
-                    required
-                  />
-                </div>
+                  <div className='mb-4'>
+                    <Label htmlFor='school-name' className='block'>
+                      School Name
+                    </Label>
+                    <Input
+                      id='school-name'
+                      value={school}
+                      onChange={handleSchoolNameChange}
+                      placeholder='Enter school name'
+                      required
+                    />
+                  </div>
 
-                <DialogFooter className='sm:justify-start'>
-                  <DialogClose asChild>
-                    <Button type='button' variant='secondary'>
-                      Cancel
+                  <DialogFooter className='sm:justify-start'>
+                    <DialogClose asChild>
+                      <Button type='button' variant='secondary'>
+                        Cancel
+                      </Button>
+                    </DialogClose>
+                    <Button type='submit' variant='primary'>
+                      Add School
                     </Button>
-                  </DialogClose>
-                  <Button type='submit' variant='primary'>
-                    Add School
-                  </Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
       </div>
       <div></div>
@@ -354,44 +371,10 @@ const UserProfileScreen = ({ dispatch, state }) => {
   const fileInputRef = useRef(null)
   const [showError, setShowError] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
-
-  const formSchema = {
-    firstName: {
-      required: 'First name is required',
-      minLength: {
-        value: 2,
-        message: 'First name must be at least 2 characters',
-      },
-    },
-    lastName: {
-      required: 'Last name is required',
-      minLength: {
-        value: 2,
-        message: 'Last name must be at least 2 characters',
-      },
-    },
-    email: {
-      required: 'Email is required',
-      pattern: {
-        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-        message: 'Invalid email address',
-      },
-    },
-    phone: {
-      required: 'Phone number is required',
-      minLength: {
-        value: 10,
-        message: 'Phone number must be at least 10 digits',
-      },
-    },
-    hometown: {},
-    gender: {
-      required: 'Gender is required',
-      validate: (value) =>
-        ['male', 'female'].includes(value) || 'Invalid gender',
-    },
-    profileImage: {},
-  }
+  const navigate = useNavigate()
+  const isStudent = state.role === 'student'
+  const isAdmin = state.role === 'admin'
+  const isTeacher = state.role === 'teacher'
 
   const form = useForm({
     defaultValues: {
@@ -402,17 +385,11 @@ const UserProfileScreen = ({ dispatch, state }) => {
       hometown: '',
       gender: '',
       profileImage: undefined,
+      course: '',
     },
-    rules: formSchema,
   })
 
-  const handleUploadClick = () => {
-    fileInputRef.current?.click()
-  }
-
-  const handleImageChange = (imagePreview) => {
-    dispatch({ type: 'SET_IMAGE_PREVIEW', payload: imagePreview })
-  }
+  const handleUploadClick = () => fileInputRef.current?.click()
 
   const handleFileChange = (event) => {
     const file = event.target.files?.[0]
@@ -420,7 +397,7 @@ const UserProfileScreen = ({ dispatch, state }) => {
       form.setValue('profileImage', file)
       const reader = new FileReader()
       reader.onloadend = () => {
-        handleImageChange(reader.result)
+        dispatch({ type: 'SET_IMAGE_PREVIEW', payload: reader.result })
         dispatch({ type: 'SET_PROFILE_IMAGE', payload: file })
       }
       reader.readAsDataURL(file)
@@ -429,41 +406,17 @@ const UserProfileScreen = ({ dispatch, state }) => {
 
   const onSubmit = async (data) => {
     try {
-      dispatch({
-        type: 'SET_FORM_DATA',
-        payload: {
-          firstName: data.firstName,
-          lastName: data.lastName,
-          email: data.email,
-          phone: data.phone,
-          hometown: data.hometown,
-          gender: data.gender,
+      // dispatch({ type: 'SET_FORM_DATA', payload: { ...data, role: state.role, city: state.city, school: state.school } });
+      console.log(data)
+      navigate('/sign-up', {
+        state: {
+          ...data,
+          role: state.role,
+          city: state.city,
+          schoolId: state.schoolId,
         },
       })
-
-      const formData = new FormData()
-      Object.keys(data).forEach((key) => {
-        if (data[key]) {
-          formData.append(key, data[key])
-        }
-      })
-
-      formData.append('city', state.city)
-      formData.append('school', state.school)
-      formData.append('role', state.role)
-
-      const response = await fetch('/api/profile', {
-        method: 'POST',
-        body: formData,
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to submit form')
-      }
-
-      // Handle success
     } catch (error) {
-      console.error('Error submitting form:', error)
       setErrorMessage(error.message)
       setShowError(true)
     }
@@ -483,9 +436,9 @@ const UserProfileScreen = ({ dispatch, state }) => {
                 accept='image/*'
               />
               <div className='w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden'>
-                {state?.imageProfile ? (
+                {state.profileImage ? (
                   <img
-                    src={state?.imageProfile}
+                    src={state.profileImage}
                     alt='Profile'
                     className='w-full h-full object-cover'
                   />
@@ -504,95 +457,73 @@ const UserProfileScreen = ({ dispatch, state }) => {
           </div>
 
           <div className='grid grid-cols-2 gap-y-6 gap-x-14'>
-            <div className='space-y-2'>
-              <Label htmlFor='firstName'>First Name</Label>
-              <Input
-                className='h-14'
-                id='firstName'
-                placeholder='Enter your first name'
-                {...form.register('firstName')}
-              />
-              {form.formState.errors.firstName && (
-                <span className='text-red-500 text-sm'>
-                  {form.formState.errors.firstName.message}
-                </span>
-              )}
-            </div>
-
-            <div className='space-y-2'>
-              <Label htmlFor='lastName'>Last Name</Label>
-              <Input
-                className='h-14'
-                id='lastName'
-                placeholder='Enter your last name'
-                {...form.register('lastName')}
-              />
-              {form.formState.errors.lastName && (
-                <span className='text-red-500 text-sm'>
-                  {form.formState.errors.lastName.message}
-                </span>
-              )}
-            </div>
-
-            <div className='space-y-2'>
-              <Label htmlFor='email'>Your email</Label>
-              <Input
-                className='h-14'
-                id='email'
-                type='email'
-                placeholder='Enter your email'
-                {...form.register('email')}
-              />
-              {form.formState.errors.email && (
-                <span className='text-red-500 text-sm'>
-                  {form.formState.errors.email.message}
-                </span>
-              )}
-            </div>
+            {['firstName', 'lastName', 'email'].map((field) => (
+              <div key={field} className='space-y-2'>
+                <Label htmlFor={field}>
+                  {field.replace(/([A-Z])/g, ' $1').trim()}
+                </Label>
+                <Input
+                  className='h-14'
+                  id={field}
+                  placeholder={`Enter your ${field}`}
+                  {...form.register(field)}
+                />
+              </div>
+            ))}
 
             <div className='space-y-2'>
               <Label htmlFor='phone'>Phone Number</Label>
               <Input
                 className='h-14'
-                id='phone'
+                id='phoneNumber'
                 type='tel'
                 placeholder='Enter your phone number'
                 {...form.register('phone')}
               />
-              {form.formState.errors.phone && (
-                <span className='text-red-500 text-sm'>
-                  {form.formState.errors.phone.message}
-                </span>
-              )}
             </div>
 
-            <div className='space-y-2'>
-              <Label htmlFor='hometown'>Hometown (optional)</Label>
-              <Input
-                className='h-14'
-                id='hometown'
-                placeholder='Enter your hometown'
-                {...form.register('hometown')}
-              />
-            </div>
-
-            <div className='space-y-2'>
-              <Label htmlFor='gender'>Gender</Label>
-              <Select onValueChange={(value) => form.setValue('gender', value)}>
-                <SelectTrigger className='h-14 w-32'>
-                  <SelectValue placeholder='Select' />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value='male'>Male</SelectItem>
-                  <SelectItem value='female'>Female</SelectItem>
-                </SelectContent>
-              </Select>
-              {form.formState.errors.gender && (
-                <span className='text-red-500 text-sm'>
-                  {form.formState.errors.gender.message}
-                </span>
-              )}
-            </div>
+            {isStudent && (
+              <>
+                <div className='space-y-2'>
+                  <Label htmlFor='hometown'>Hometown</Label>
+                  <Input
+                    className='h-14'
+                    id='hometown'
+                    placeholder='Enter your hometown'
+                    {...form.register('hometown')}
+                  />
+                </div>
+                <div className='space-y-2'>
+                  <Label htmlFor='gender'>Gender</Label>
+                  <Select
+                    onValueChange={(value) => form.setValue('gender', value)}
+                  >
+                    <SelectTrigger className='h-14 w-32'>
+                      <SelectValue placeholder='Select' />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value='male'>Male</SelectItem>
+                      <SelectItem value='female'>Female</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className='space-y-2'>
+                  <Label htmlFor='course'>Course</Label>
+                  <Select
+                    onValueChange={(value) => form.setValue('course', value)}
+                  >
+                    <SelectTrigger className='h-14 w-full'>
+                      <SelectValue placeholder='Select your course' />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value='class-10'>Class 10</SelectItem>
+                      <SelectItem value='class-11'>Class 11</SelectItem>
+                      <SelectItem value='class-12'>Class 12</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            )}
           </div>
 
           <Button
@@ -605,6 +536,7 @@ const UserProfileScreen = ({ dispatch, state }) => {
           </Button>
         </Card>
       </form>
+
       {showError && (
         <Alert variant='destructive' className='mt-5 mb-4'>
           <AlertCircle className='h-4 w-4' />
@@ -615,6 +547,7 @@ const UserProfileScreen = ({ dispatch, state }) => {
     </section>
   )
 }
+
 const OnBoarding = () => {
   const [step, setStep] = useState(1)
   const [state, dispatch] = useReducer(reducer, initialState)
@@ -667,9 +600,10 @@ const OnBoarding = () => {
             <RoleScreen dispatch={dispatch} role={state.role} />
           ) : step === 2 ? (
             <SchoolScreen
+              isAdmin={state.role === 'admin'}
               dispatch={dispatch}
               school={state.school}
-              city={state.city}
+              handleNextStep={handleNextStep}
             />
           ) : (
             <UserProfileScreen dispatch={dispatch} state={state} />

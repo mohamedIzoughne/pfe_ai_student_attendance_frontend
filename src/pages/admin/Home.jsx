@@ -40,6 +40,11 @@ function Students() {
   ])
   const [programs, setPrograms] = useState(['GI', 'GE', 'TM', 'GBI'])
 
+  const frameworksList = [
+    { value: "girl", label: "girl" },
+    { value: "men", label: "men" },
+  ];
+
   const handleNotificationClick = () => {
     if (notifications > 0) {
       setNotifications(0)
@@ -112,11 +117,11 @@ function Students() {
           <div className='mini-div-2'>
             <h4 className='h4-2'>Total Students by Gender</h4>
             <div>
-              <ComboboxDemo className='comboButton' width='105px' />
+              <ComboboxDemo placeholder="class" className='comboButton' width='105px' options={frameworksList} />
             </div>
           </div>
           <div className='piechart-1 piechart-1-ad'>
-            <PieChartComponent />
+            <PieChartComponent width={300} height={300}/>
           </div>
         </div>
 
@@ -124,8 +129,8 @@ function Students() {
           <div className='mini-div-2'>
             <h4>Weekly Attendance</h4>
             <div className='comboButton'>
-              <ComboboxDemo width='120px' />
-              <ComboboxDemo width='100px' />
+              <ComboboxDemo placeholder='class' width='120px' />
+              {/* <ComboboxDemo width='100px' /> */}
             </div>
           </div>
           <div className='piechart-1'>
@@ -140,7 +145,7 @@ function Students() {
           <div className='title-barchart'>
             <h2>Class Attendance Summary</h2>
             <div>
-              <ComboboxDemo width='100px' />
+              <ComboboxDemo placeholder='This week' width='130px' />
             </div>
           </div>
           <Barchart />

@@ -1,0 +1,59 @@
+.header-courses {
+    width: 100%;
+}
+.header-courses input {
+    width: 25%;
+}
+
+/* .header-courses .btn1 {
+    background-color: white;
+    padding: 5.5px 15px;
+    color: #848485;
+    border-radius: 5px ;
+} */
+
+.mini-div-center-2 .btn1 {
+
+    height: 36px;
+   
+}
+
+.table-admin {
+    width: 100%;
+}
+
+
+
+.table-admin td , .table-admin th {
+    text-align: center;
+    border-bottom: 1px solid #D5D5D5 ;
+}
+
+.table-admin  .last-row td {
+    border-bottom: none ;
+}
+
+.table-admin th {
+    padding: 10px;
+    
+}
+
+.table-admin td {
+    padding: 20px;
+}
+
+.superv {
+    font-style: italic;
+    opacity: 90%;
+}
+
+.Classs , .Gradee {
+    color: #202224;
+    opacity: 90%;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.Capa {
+    font-size: 12px;
+}

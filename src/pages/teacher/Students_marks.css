@@ -1,0 +1,40 @@
+.Marks-table {
+    width: 100%;
+}
+.Marks-table th {
+    padding: 10px;
+}
+
+.Marks-table td {
+    padding: 20px;
+    width: 20%;
+}
+
+
+.Marks-table td img {
+    width: 60.26px;
+    height: 60.26px;
+    margin: 0 auto;
+    border-radius: 6px;
+}
+
+.Marks-table .Name-mark ,
+ .Marks-table .id-mark ,
+ .Marks-table .mark{
+    color: #202224;
+    opacity: 90%;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.mark-notes {
+    font-size: 12px;
+}
+
+.notes {
+    font-size: 14px;
+}
+
+.notes button {
+    color: #4880FF;
+}

@@ -1,10 +1,10 @@
-"use client"
+'use client'
 
-import * as React from "react"
-import { Check, ChevronsUpDown } from "lucide-react"
+import * as React from 'react'
+import { Check, ChevronsUpDown } from 'lucide-react'
 
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
 import {
   Command,
   CommandEmpty,
@@ -12,78 +12,59 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command"
+} from '@/components/ui/command'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
+} from '@/components/ui/popover'
 
-const frameworks = [
-  {
-    value: "next.js",
-    label: "Next.js",
-  },
-  {
-    value: "sveltekit",
-    label: "SvelteKit",
-  },
-  {
-    value: "nuxt.js",
-    label: "Nuxt.js",
-  },
-  {
-    value: "remix",
-    label: "Remix",
-  },
-  {
-    value: "astro",
-    label: "Astro",
-  },
-]
-
-export function ComboboxDemo({ width = "200px" }) { // ✅ Largeur dynamique via props
-  const [open, setOpen] = React.useState(false);
-  const [value, setValue] = React.useState("");
+export function ComboboxDemo({
+  width = '200px',
+  placeholder = 'Select an option...',
+  options = [], // ✅ Liste dynamique d'options
+}) {
+  const [open, setOpen] = React.useState(false)
+  const [value, setValue] = React.useState('')
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
-          variant="outline"
-          role="combobox"
+          variant='outline'
+          role='combobox'
           aria-expanded={open}
-          className="flex items-center justify-between px-4 py-2"
-          style={{ width }}  // ✅ Appliquer la largeur dynamiquement
+          className='flex items-center justify-between px-4 py-2'
+          style={{ width }}
         >
-          <span className="truncate">
+          <span className='truncate'>
             {value
-              ? frameworks.find((framework) => framework.value === value)?.label
-              : "Select framework..."}
+              ? options.find((opt) => opt.value === value)?.label
+              : placeholder}
           </span>
-          <ChevronsUpDown className="h-4 w-4 opacity-50 ml-2" /> {/* ✅ Espacement amélioré */}
+          <ChevronsUpDown className='h-4 w-4 opacity-50 ml-2' />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="p-0" style={{ width }}> {/* ✅ Largeur dynamique */}
+      <PopoverContent className='p-0' style={{ width }}>
         <Command>
-          <CommandInput placeholder="Search framework..." className="h-9" />
+          <CommandInput placeholder='Search...' className='h-9' />
           <CommandList>
-            <CommandEmpty>No framework found.</CommandEmpty>
+            <CommandEmpty>No option found.</CommandEmpty>
             <CommandGroup>
-              {frameworks.map((framework) => (
+              {options.map((opt) => (
                 <CommandItem
-                  key={framework.value}
-                  value={framework.value}
+                  key={opt.value}
+                  value={opt.value}
                   onSelect={(currentValue) => {
-                    setValue(currentValue === value ? "" : currentValue);
-                    setOpen(false);
+                    setValue(currentValue === value ? '' : currentValue)
+                    setOpen(false)
                   }}
                 >
-                  {framework.label}
+                  {opt.label}
                   <Check
                     className={cn(
-                      "ml-auto",
-                      value === framework.value ? "opacity-100" : "opacity-0"
+                      'ml-auto',
+                      value === opt.value ? 'opacity-100' : 'opacity-0'
                     )}
                   />
                 </CommandItem>
@@ -93,5 +74,5 @@ export function ComboboxDemo({ width = "200px" }) { // ✅ Largeur dynamique via
         </Command>
       </PopoverContent>
     </Popover>
-  );
+  )
 }

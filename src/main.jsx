@@ -17,13 +17,13 @@ import { ContextProvider } from './store'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
-      <ContextProvider>
-        <QueryClientProvider client={queryClient}>
-          <App />
-          <ReactQueryDevtools initialIsOpen={false} />
-        </QueryClientProvider>
-      </ContextProvider>
-    </ClerkProvider>
-  </StrictMode>
+  <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+    <ContextProvider>
+      <QueryClientProvider client={queryClient}>
+        <App />
+        <ReactQueryDevtools initialIsOpen={false} />
+      </QueryClientProvider>
+    </ContextProvider>
+  </ClerkProvider>
+   </StrictMode>
 )

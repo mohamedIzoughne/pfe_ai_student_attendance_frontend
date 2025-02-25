@@ -19,6 +19,8 @@ import { IoEllipsisVertical } from "react-icons/io5";
 import { MdOutlineQuiz } from "react-icons/md";
 import { RiDeleteBinLine } from "react-icons/ri";
 import { MdOutlineTask } from "react-icons/md";
+import Header from '@/components/Header';
+
 
 function Home() {
   const [notifications, setNotifications] = useState(6);
@@ -31,26 +33,7 @@ function Home() {
 
   return (
     <>
-      {/* Bouton de notification */}
-
-      {/* Contenu existant */}
-      <div className="div0">
-        <div
-          className="notification-container"
-          onClick={handleNotificationClick}
-        >
-          <Bell className="notification-icon" size={30} color="#4880FF" />
-          {notifications > 0 && (
-            <span className="notification-badge">{notifications}</span>
-          )}
-        </div>
-        <img className="img2" src={manImage4} alt="" />
-        <div className="mini-div">
-          <span>Moni Roy</span>
-          <h4>Teacher</h4>
-        </div>
-        <img className="img3" src={manImage5} alt="" />
-      </div>
+      <Header />
 
       <div className="container">
         <div className="div1">
@@ -88,7 +71,7 @@ function Home() {
           <div className="mini-div-2">
             <h4>Students by Gender</h4>
             <div>
-              <ComboboxDemo className="comboButton" width="105px" />
+              <ComboboxDemo className="comboButton" width="105px" placeholder='' />
             </div>
           </div>
 
