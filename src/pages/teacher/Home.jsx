@@ -23,6 +23,7 @@ import Header from '@/components/Header'
 import { useGetTeacherDashboardData } from '@/api/UsersApi'
 import StudentsPieChartComponent from '@/components/teacher/StudentsGenderPieChart'
 import WeeklyAttendanceChart from '@/components/teacher/WeeklyAttendanceChart'
+import TeacherSchedule from '@/components/teacher/TeacherSchedule'
 
 function Home() {
   const { data: dashboardData } = useGetTeacherDashboardData(1) // Replace with actual teacherId
@@ -84,7 +85,8 @@ function Home() {
         <WeeklyAttendanceChart />
       </div>
 
-      <div className='div-Table'>
+      <TeacherSchedule />
+      {/* <div className='div-Table'>
         <div className='just-title'>
           <h3>Schedule</h3>
         </div>
@@ -257,7 +259,7 @@ function Home() {
             </td>
           </tr>
         </table>
-      </div>
+      </div> */}
 
       <div className='partie-barchart-principal'>
         <div className='partie-barchart'>
