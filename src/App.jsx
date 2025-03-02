@@ -4,6 +4,7 @@ import { routes, authRoutes } from './routes'
 import Layout from './components/Layout'
 import { Context } from './store'
 import StudentPage from './pages/student/Home'
+import ImageCutterPage from './pages/student/ImageCutter'
 
 function App() {
   const { userConfiguration } = useContext(Context)
@@ -17,6 +18,7 @@ function App() {
         ))}
 
         <Route path='/' element={<StudentPage />} />
+        <Route path='/image-cut' element={<ImageCutterPage />} />
 
         {/* Protected routes based on role */}
         {/* <Route path='/' element={<Layout />}>
