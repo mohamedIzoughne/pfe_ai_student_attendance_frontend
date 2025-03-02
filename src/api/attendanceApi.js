@@ -61,21 +61,56 @@ export const useGetWeeklyAttendance = (courseId) => {
   return useQuery({
     queryKey: ['weeklyAttendance', courseId],
     queryFn: async () => {
-      const { data } = await apiClient.get(`/attendance/weekly-attendance/${courseId}`);
-      return data;
+      const { data } = await apiClient.get(
+        `/attendance/weekly-attendance?${
+          courseId ? `courseId=${courseId}` : ''
+        }`
+      )
+      return data
     },
-    enabled: !!courseId,
-  });
-};
+    // enabled: !!courseId,
+  })
+}
 
-// Get attendance for a specific week
+export const useGetTeacherWeeklyAttendance = (teacherId, courseId, weekNumber) => {
+  return useQuery({
+    queryKey: ['teacherWeeklyAttendance', teacherId, courseId, weekNumber],
+    queryFn: async () => {
+      const { data } = await apiClient.get(
+        `/attendance/teacher/${teacherId}/weekly-attendance?${
+          courseId ? `courseId=${courseId}&` : ''
+        }${weekNumber ? `weekNumber=${weekNumber}` : ''}`
+      )
+      return data
+    },
+    enabled: !!teacherId,
+  })
+}
+
+
+export const useGetCoursesAttendanceSummary = (weekNumber) => {
+  return useQuery({
+    queryKey: ['coursesAttendanceSummary', weekNumber],
+    queryFn: async () => {
+      const { data } = await apiClient.get(
+        `/attendance/courses-attendance-summary${
+          weekNumber ? `weekNumber=${weekNumber}` : ''
+        }`
+      )
+      return data
+    },
+  })
+}
+
 export const useGetAttendanceByWeek = (weekNumber, courseId) => {
   return useQuery({
     queryKey: ['attendanceByWeek', weekNumber, courseId],
     queryFn: async () => {
-      const { data } = await apiClient.get(`/attendance/attendance/week/${weekNumber}/${courseId}`);
-      return data;
+      const { data } = await apiClient.get(
+        `/attendance/attendance/week/${weekNumber}/${courseId}`
+      )
+      return data
     },
     enabled: !!weekNumber && !!courseId,
-  });
-};
+  })
+}

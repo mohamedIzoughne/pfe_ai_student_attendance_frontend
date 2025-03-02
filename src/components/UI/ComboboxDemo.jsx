@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { Check, ChevronsUpDown } from 'lucide-react'
-
+import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
@@ -22,24 +22,25 @@ import {
 export function ComboboxDemo({
   width = '200px',
   placeholder = 'Select an option...',
-  options = [], // ✅ Liste dynamique d'options
+  options = [],
+  onSelect = () => {},
 }) {
-  const [open, setOpen] = React.useState(false)
-  const [value, setValue] = React.useState('')
+  const [isOpen, setIsOpen] = useState(false)
+  const [selectedOption, setSelectedOption] = useState({})
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <Button
           variant='outline'
           role='combobox'
-          aria-expanded={open}
+          aria-expanded={isOpen}
           className='flex items-center justify-between px-4 py-2'
           style={{ width }}
         >
           <span className='truncate'>
-            {value
-              ? options.find((opt) => opt.value === value)?.label
+            {selectedOption.name
+              ? options.find((option) => option.id === selectedOption.id)?.name
               : placeholder}
           </span>
           <ChevronsUpDown className='h-4 w-4 opacity-50 ml-2' />
@@ -51,20 +52,24 @@ export function ComboboxDemo({
           <CommandList>
             <CommandEmpty>No option found.</CommandEmpty>
             <CommandGroup>
-              {options.map((opt) => (
+              {options.map((option) => (
                 <CommandItem
-                  key={opt.value}
-                  value={opt.value}
+                  key={option.id}
+                  value={option.name}
                   onSelect={(currentValue) => {
-                    setValue(currentValue === value ? '' : currentValue)
-                    setOpen(false)
+                    const newSelectedOption = currentValue === selectedOption.name ? {} : option
+                    setSelectedOption(newSelectedOption)
+                    setIsOpen(false)
+                    onSelect(newSelectedOption)
                   }}
                 >
-                  {opt.label}
+                  {option.name}
                   <Check
                     className={cn(
                       'ml-auto',
-                      value === opt.value ? 'opacity-100' : 'opacity-0'
+                      selectedOption.name === option.name
+                        ? 'opacity-100'
+                        : 'opacity-0'
                     )}
                   />
                 </CommandItem>

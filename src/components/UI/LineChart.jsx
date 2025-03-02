@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react'
+import { PureComponent } from 'react'
 import {
   LineChart,
   Line,
@@ -10,106 +10,70 @@ import {
 
 const data = [
   {
-    name: 'Page A',
-    uv: 4000,
-    pv: 2400,
-    amt: 2400,
+    weekDay: 'Monday',
+    presence: 4000,
+    absence: 2400,
   },
   {
-    name: 'Page B',
-    uv: 3000,
-    pv: 1398,
-    amt: 2210,
+    weekDay: 'Monday',
+    presence: 3000,
+    absence: 1398,
   },
   {
-    name: 'Page C',
-    uv: 2000,
-    pv: 9800,
-    amt: 2290,
+    weekDay: 'Monday',
+    presence: 2000,
+    absence: 4800,
   },
   {
-    name: 'Page D',
-    uv: 2780,
-    pv: 3908,
-    amt: 2000,
+    weekDay: 'Monday',
+    presence: 2780,
+    absence: 3908,
   },
   {
-    name: 'Page E',
-    uv: 1890,
-    pv: 4800,
-    amt: 2181,
+    weekDay: 'Monday',
+    presence: 1890,
+    absence: 4800,
   },
   {
-    name: 'Page F',
-    uv: 2390,
-    pv: 3800,
-    amt: 2500,
+    weekDay: 'Monday',
+    presence: 2390,
+    absence: 3800,
   },
   {
-    name: 'Page G',
-    uv: 3490,
-    pv: 4300,
-    amt: 2100,
-  },
-  {
-    name: 'Page E',
-    uv: 3490,
-    pv: 4300,
-    amt: 2100,
-  },
-  {
-    name: 'Page F',
-    uv: 3490,
-    pv: 4300,
-    amt: 2100,
-  },
-  {
-    name: 'Page H',
-    uv: 3490,
-    pv: 4300,
-    amt: 2100,
-  },
-  {
-    name: 'Page I',
-    uv: 3490,
-    pv: 4300,
-    amt: 2100,
-  },
-  {
-    name: 'Page J',
-    uv: 3490,
-    pv: 4300,
-    amt: 2100,
+    weekDay: 'Monday',
+    presence: 3490,
+    absence: 4300,
   },
 ]
+import {useGetWeeklyAttendance} from '@/api/attendanceApi'
 
-export default class Example extends PureComponent {
-  chart = (interval) => (
+const WeeklyAttendanceChart = () => {
+  const { data: WeeklyAttendanceData } = useGetWeeklyAttendance()
+  const chart = (interval) => (
     <ResponsiveContainer height={250} width='100%'>
-      <LineChart data={data} margin={{ right: 25, left: 30, top: 40 }}>
+      <LineChart data={WeeklyAttendanceData} margin={{ right: 25, left: 30, top: 40 }}>
         <CartesianGrid strokeDasharray='3 3' />
-        <XAxis dataKey='name' interval={interval} />
+        <XAxis dataKey='weekDay' interval={interval} />
         <YAxis interval={interval} />
         <Line
           type='monotone'
-          dataKey='pv'
+          dataKey='absence'
           stroke='#8280FF'
           activeDot={{ r: 8 }}
         />
-        <Line type='monotone' dataKey='uv' stroke='#FF9066' />
+        <Line type='monotone' dataKey='presence' stroke='#FF9066' />
       </LineChart>
     </ResponsiveContainer>
   )
 
-  render() {
-    return (
-      <>
-        {this.chart('preserveEnd')}
-        {/* {this.chart("preserveStart")}
-        {this.chart("preserveStartEnd")}
-        {this.chart("equidistantPreserveStart")}
-        {this.chart(0)} */}
-      </>
-    )
-  }
+  return (
+    <>
+      {chart('preserveEnd')}
+      {/* {chart("preserveStart")}
+      {chart("preserveStartEnd")}
+      {chart("equidistantPreserveStart")}
+      {chart(0)} */}
+    </>
+  )
 }
+export default WeeklyAttendanceChart

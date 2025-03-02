@@ -1,5 +1,9 @@
 import React, { useCallback, useState } from 'react'
 import { PieChart, Pie, Sector, Cell } from 'recharts'
+import { ComboboxDemo } from '../UI/ComboboxDemo'
+
+import { useGetGenderData } from '@/api/UsersApi'
+import { useGetCourses } from '@/api/curriculumApi'
 
 const renderActiveShape = (props) => {
   const RADIAN = Math.PI / 180
@@ -74,39 +78,63 @@ const renderActiveShape = (props) => {
   )
 }
 
-const PieChartComponent = ({
+const StudentsPieChartComponent = ({
   width = 400,
   height = 310,
   innerRadius = 60,
   outerRadius = 80,
   colors = ['#FF9066', '#8280FF'],
-  data = [],
 }) => {
   const [activeIndex, setActiveIndex] = useState(0)
+  const [selectedCourse, setSelectedCourse] = useState({})
+  const { data: courses } = useGetCourses(1)
+  const { data: genderData } = useGetGenderData(1, selectedCourse?.id)
 
   const onPieEnter = useCallback((_, index) => {
     setActiveIndex(index)
   }, [])
 
+  const data = [
+    { name: 'Males', value: genderData?.maleStudents },
+    { name: 'Females', value: genderData?.femaleStudents },
+  ]
+
   return (
-    <PieChart width={width} height={height}>
-      <Pie
-        activeIndex={activeIndex}
-        activeShape={renderActiveShape}
-        data={data}
-        cx='50%'
-        cy='50%'
-        innerRadius={innerRadius}
-        outerRadius={outerRadius}
-        dataKey='value'
-        onMouseEnter={onPieEnter}
-      >
-        {data.map((_, index) => (
-          <Cell key={`cell-${index}`} fill={colors[index] || '#ccc'} />
-        ))}
-      </Pie>
-    </PieChart>
+    <div className='div2 div2-ad'>
+      <div className='mini-div-2'>
+        <h4 className='h4-2'>Total Students by Gender</h4>
+        <div>
+          <ComboboxDemo
+            placeholder='course'
+            className='comboButton'
+            width='105px'
+            options={courses}
+            onSelect={setSelectedCourse}
+          />
+        </div>
+      </div>
+      <div className='piechart-1 piechart-1-ad'>
+        <PieChart width={width} height={height}>
+          <Pie
+            activeIndex={activeIndex}
+            activeShape={renderActiveShape}
+            data={data}
+            cx='50%'
+            cy='50%'
+            innerRadius={innerRadius}
+            outerRadius={outerRadius}
+            dataKey='value'
+            onMouseEnter={onPieEnter}
+          >
+            {data.map((_, index) => (
+              <Cell key={`cell-${index}`} fill={colors[index] || '#ccc'} />
+            ))}
+          </Pie>
+        </PieChart>
+      </div>
+    </div>
   )
 }
 
-export default PieChartComponent
+export default StudentsPieChartComponent
+

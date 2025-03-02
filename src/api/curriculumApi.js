@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/api/apiClient'
 
 export const useCreateSchool = () => {
@@ -42,6 +42,80 @@ export const useGetCourses = (schoolId) => {
   })
 }
 
+export const useGetCoursesDetails = (schoolId) => {
+  return useQuery({
+    queryKey: ['courses-details', schoolId],
+    queryFn: async () => {
+      const { data } = await apiClient.get(
+        `/curriculum/courses-details?schoolId=${schoolId}`
+      )
+      return data.courses
+    },
+    enabled: !!schoolId,
+  })
+}
+
+export const useGetTeachers = (schoolId) => {
+  return useQuery({
+    queryKey: ['teachers', schoolId],
+    queryFn: async () => {
+      const { data } = await apiClient.get(
+        `/curriculum/teachers?schoolId=${schoolId}`
+      )
+      return data.teachers
+    },
+    enabled: !!schoolId,
+  })
+}
+
+export const useUpdateCourse = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ courseId, courseData }) => {
+      const { data } = await apiClient.put(
+        `/curriculum/courses/${courseId}`,
+        courseData
+      )
+      return data
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries(['courses'])
+      queryClient.invalidateQueries(['courses-details'])
+    },
+  })
+}
+
+export const useDeleteCourse = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (courseId) => {
+      const { data } = await apiClient.delete(`/curriculum/courses/${courseId}`)
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['courses'])
+      queryClient.invalidateQueries(['courses-details'])
+    },
+  })
+}
+
+export const useCreateCourse = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (courseData) => {
+      const { data } = await apiClient.post('/curriculum/courses', courseData)
+      return data
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries(['courses'])
+      queryClient.invalidateQueries(['courses-details'])
+    },
+  })
+}
+
+
+
+
 export const useGetSessions = (courseId) => {
   return useQuery({
     queryKey: ['sessions', courseId],
@@ -55,45 +129,52 @@ export const useGetSessions = (courseId) => {
   })
 }
 
-
-export const useGetRooms = () => {
+export const useGetRooms = (schoolId) => {
   return useQuery({
-    queryKey: ['rooms'],
+    queryKey: ['rooms', schoolId],
     queryFn: async () => {
-      const { data } = await apiClient.get('/curriculum/rooms')
+      const { data } = await apiClient.get(`/curriculum/rooms/${schoolId}`)
       return data.rooms
     },
+    enabled: !!schoolId,
   })
 }
 
 export const useCreateRoom = () => {
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (roomData) => {
-      const { data } = await apiClient.post(
-        '/curriculum/rooms',
-        roomData
-      )
+      const { data } = await apiClient.post('/curriculum/rooms', roomData)
       return data
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries(['rooms', variables.schoolId])
     },
   })
 }
 
-export const useDeleteRoom = () => {
+export const useRemoveRoom = () => {
+  const queryClient = useQueryClient()
+
   return useMutation({
     mutationFn: async (roomId) => {
-      const { data } = await apiClient.delete(
-        `/curriculum/rooms/${roomId}`
-      )
+      const { data } = await apiClient.delete(`/curriculum/rooms/${roomId}`)
       return data
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries(['rooms'])
     },
   })
 }
-
 export const useAddField = () => {
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (fieldData) => {
       const { data } = await apiClient.post('/curriculum/fields', fieldData)
       return data
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries(['fields'])
     },
   })
 }
@@ -110,20 +191,25 @@ export const useGetFields = (schoolId) => {
 }
 
 export const useRemoveField = () => {
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (fieldId) => {
       const { data } = await apiClient.delete(`/curriculum/fields/${fieldId}`)
       return data
     },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries(['fields'])
+    },
   })
 }
-
 
 export const useGetTeacherCourses = (teacherId) => {
   return useQuery({
     queryKey: ['teacherCourses', teacherId],
     queryFn: async () => {
-      const { data } = await apiClient.get(`/curriculum/teachers/${teacherId}/courses`)
+      const { data } = await apiClient.get(
+        `/curriculum/teachers/${teacherId}/courses`
+      )
       return data.courses
     },
     enabled: !!teacherId, // Only run when teacherId is available

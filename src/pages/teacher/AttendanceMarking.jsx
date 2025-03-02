@@ -2,9 +2,6 @@
 import './AttendanceMarking.css'
 import { Switch } from '@/components/ui/switch'
 import { Input } from '@/components/ui/input'
-import { ComboboxDemo } from '@/components/ui/ComboboxDemo'
-import { ButtonLoading } from '@/components/ui/ButtonLoading'
-import { Bell } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import { io } from 'socket.io-client'
 
@@ -295,9 +292,10 @@ const Options = ({ width = '200px', setStudents, newStudents = [] }) => {
     </>
   )
 }
+
 const AttendanceMarking = () => {
   const [students, setStudents] = useState([])
-  // const students = useStudentsAttendances(selectedCourse.id, selectedSession.id)
+  const [searchQuery, setSearchQuery] = useState('')
   const [socket, setSocket] = useState(null)
   const [status, setStatus] = useState('Not connected')
 
@@ -346,6 +344,14 @@ const AttendanceMarking = () => {
     })
   }
 
+  const handleSearch = (e) => {
+    setSearchQuery(e.target.value)
+  }
+
+  const filteredStudents = students.filter((student) =>
+    student.name.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
   console.log(students)
 
   return (
@@ -360,7 +366,11 @@ const AttendanceMarking = () => {
 
       <div className='div-center'>
         <div>
-          <Input placeholder='Search Student name' />
+          <Input 
+            placeholder='Search Student name' 
+            value={searchQuery}
+            onChange={handleSearch}
+          />
           <img src={manImage2} alt='' />
         </div>
 
@@ -378,7 +388,7 @@ const AttendanceMarking = () => {
           </tr>
         </thead>
         <tbody>
-          {students.map((student) => (
+          {filteredStudents.map((student) => (
             <tr className='py-5' key={student.id}>
               <td className='object-cover'>
                 <img src={`${API_URL}/${student.image}`} alt='' />
@@ -401,5 +411,4 @@ const AttendanceMarking = () => {
     </>
   )
 }
-
 export default AttendanceMarking

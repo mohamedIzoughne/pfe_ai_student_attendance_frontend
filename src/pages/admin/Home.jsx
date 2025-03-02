@@ -10,7 +10,6 @@ import manImage10 from '@/assets/images/Icon (5).png'
 import manImage11 from '@/assets/images/Icon (6).png'
 
 import PieChartComponent from '@/components/ui/PieChartComponent'
-import Example from '@/components/ui/LineChart'
 import Barchart from '@/components/UI/StackBarchart'
 
 import { Button } from '@/components/ui/button'
@@ -26,24 +25,47 @@ import {
 
 import { IoAddOutline } from 'react-icons/io5'
 
-function Students() {
-  const [notifications, setNotifications] = useState(6)
-  const [newItem, setNewItem] = useState('')
-  const [dialogType, setDialogType] = useState(null)
+import { useGetAdminDashboardData, useGetGenderData } from '@/api/UsersApi'
+import {
+  useCreateRoom,
+  useRemoveRoom,
+  useGetRooms,
+  useRemoveField,
+  useGetFields,
+  useAddField,
+} from '@/api/curriculumApi'
 
-  // ✅ Ajouter un state pour stocker les salles et programmes
-  const [classrooms, setClassrooms] = useState([
-    'Salle 01',
-    'Amphi 1',
-    'Amphi 2',
-    'Amphi 3',
-  ])
-  const [programs, setPrograms] = useState(['GI', 'GE', 'TM', 'GBI'])
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import CourseAttendanceSummaryChart from '@/components/admin/courseAttendanceSummaryChart'
+import WeeklyAttendanceChart from '@/components/admin/WeeklyAttendanceChart'
+import StudentsPieChartComponent from '@/components/admin/StudentsGenderPieChart'
+
+function Home() {
+  const [notifications, setNotifications] = useState(6)
+  const [newRoom, setNewRoom] = useState({ name: '', capacity: '' })
+  const [dialogType, setDialogType] = useState(null)
+  const [selectedItem, setSelectedItem] = useState(null)
+  const { data: dashboardStats = {} } = useGetAdminDashboardData(1)
+  const { data: genderData } = useGetGenderData(1)
+  const { data: rooms } = useGetRooms(1)
+  const { data: fields } = useGetFields(1)
+  // const { data: WeeklyAttendanceData } = useGetWeeklyAttendance()
+  // const { data: coursesAttendanceSummary } = useGetCoursesAttendanceSummary()
+  const createRoom = useCreateRoom()
+  const removeRoom = useRemoveRoom()
+  const addField = useAddField()
+  const removeField = useRemoveField()
+  
 
   const frameworksList = [
-    { value: "girl", label: "girl" },
-    { value: "men", label: "men" },
-  ];
+    { value: 'girl', label: 'girl' },
+    { value: 'men', label: 'men' },
+  ]
 
   const handleNotificationClick = () => {
     if (notifications > 0) {
@@ -51,18 +73,34 @@ function Students() {
     }
   }
 
-  // ✅ Ajouter dynamiquement la salle ou le programme
-  const handleSubmit = () => {
-    if (newItem.trim() === '') return
+  const handleSubmit = async () => {
+    if (newRoom.name.trim() === '') return
 
     if (dialogType === 'classroom') {
-      setClassrooms([...classrooms, newItem]) // Ajoute une salle
+      await createRoom.mutateAsync({
+        name: newRoom.name,
+        capacity: parseInt(newRoom.capacity),
+        schoolId: 1,
+      })
     } else if (dialogType === 'program') {
-      setPrograms([...programs, newItem]) // Ajoute un programme
+      await addField.mutateAsync({
+        name: newRoom.name,
+        schoolId: 1,
+      })
     }
 
-    setNewItem('')
-    setDialogType(null) // Ferme le dialog
+    setNewRoom({ name: '', capacity: '' })
+    setDialogType(null)
+  }
+
+  const handleDelete = async () => {
+    if (dialogType === 'deleteRoom') {
+      await removeRoom.mutateAsync(selectedItem.id)
+    } else if (dialogType === 'deleteProgram') {
+      await removeField.mutateAsync(selectedItem.id)
+    }
+    setDialogType(null)
+    setSelectedItem(null)
   }
 
   return (
@@ -91,21 +129,21 @@ function Students() {
         <div className='div1 div1-ad'>
           <div>
             <h3>Total Students</h3>
-            <span>356</span>
+            <span>{dashboardStats.totalStudents}</span>
           </div>
           <img src={manImage6} alt='' />
         </div>
         <div className='div1 div1-ad'>
           <div>
             <h3>Total teachers</h3>
-            <span>10</span>
+            <span>{dashboardStats.totalTeachers}</span>
           </div>
           <img src={manImage10} alt='' />
         </div>
         <div className='div1 div1-ad'>
           <div>
-            <h3>Total Classes</h3>
-            <span>40</span>
+            <h3>Total Courses</h3>
+            <span>{dashboardStats.totalCourses}</span>
           </div>
           <img src={manImage11} alt='' />
         </div>
@@ -113,43 +151,14 @@ function Students() {
 
       {/* Charts Section */}
       <div className='container-2 container-2-ad'>
-        <div className='div2 div2-ad'>
-          <div className='mini-div-2'>
-            <h4 className='h4-2'>Total Students by Gender</h4>
-            <div>
-              <ComboboxDemo placeholder="class" className='comboButton' width='105px' options={frameworksList} />
-            </div>
-          </div>
-          <div className='piechart-1 piechart-1-ad'>
-            <PieChartComponent width={300} height={300}/>
-          </div>
-        </div>
+        <StudentsPieChartComponent />
 
-        <div className='div2-2'>
-          <div className='mini-div-2'>
-            <h4>Weekly Attendance</h4>
-            <div className='comboButton'>
-              <ComboboxDemo placeholder='class' width='120px' />
-              {/* <ComboboxDemo width='100px' /> */}
-            </div>
-          </div>
-          <div className='piechart-1'>
-            <Example />
-          </div>
-        </div>
+        <WeeklyAttendanceChart />
       </div>
 
       {/* Class Attendance Summary */}
       <div className='partie-barchart-principal'>
-        <div className='partie-barchart'>
-          <div className='title-barchart'>
-            <h2>Class Attendance Summary</h2>
-            <div>
-              <ComboboxDemo placeholder='This week' width='130px' />
-            </div>
-          </div>
-          <Barchart />
-        </div>
+        <CourseAttendanceSummaryChart />
 
         {/* Academics Section */}
         <div className='end-part end-part-admin'>
@@ -161,10 +170,25 @@ function Students() {
               <h3>Classrooms</h3>
             </div>
             <div className='ad-add'>
-              {classrooms.map((room, index) => (
-                <button key={index} className='p-2 bg-gray-200 rounded-lg'>
-                  {room}
-                </button>
+              {rooms?.map((room) => (
+                <TooltipProvider key={room.id}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        className='p-2 bg-gray-200 rounded-lg'
+                        onClick={() => {
+                          setDialogType('deleteRoom')
+                          setSelectedItem(room)
+                        }}
+                      >
+                        {room.name}
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent className='bg-white'>
+                      <p>Capacity: {room.capacity}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               ))}
 
               {/* Ajouter une salle */}
@@ -183,9 +207,16 @@ function Students() {
               <h3>Programs</h3>
             </div>
             <div className='ad-add'>
-              {programs.map((program, index) => (
-                <button key={index} className='p-2 bg-gray-200 rounded-lg'>
-                  {program}
+              {fields?.map((field) => (
+                <button
+                  key={field.id}
+                  className='p-2 bg-gray-200 rounded-lg'
+                  onClick={() => {
+                    setDialogType('deleteProgram')
+                    setSelectedItem(field)
+                  }}
+                >
+                  {field.name}
                 </button>
               ))}
 
@@ -202,7 +233,7 @@ function Students() {
 
         {/* Dialog pour ajouter une salle ou un programme */}
         <Dialog
-          open={dialogType !== null}
+          open={dialogType === 'classroom' || dialogType === 'program'}
           onOpenChange={() => setDialogType(null)}
         >
           <DialogContent>
@@ -212,21 +243,41 @@ function Students() {
                 {dialogType === 'classroom' ? 'une salle' : 'un programme'}
               </DialogTitle>
               <DialogDescription>
-                Entrez le nom de{' '}
-                {dialogType === 'classroom' ? 'la salle' : 'du programme'} que
-                vous souhaitez ajouter.
+                {dialogType === 'classroom'
+                  ? 'Entrez le nom et la capacité de la salle'
+                  : 'Entrez le nom du programme'}{' '}
+                que vous souhaitez ajouter.
               </DialogDescription>
             </DialogHeader>
-            <Input
-              type='text'
-              placeholder={
-                dialogType === 'classroom'
-                  ? 'Nom de la salle'
-                  : 'Nom du programme'
-              }
-              value={newItem}
-              onChange={(e) => setNewItem(e.target.value)}
-            />
+            {dialogType === 'classroom' ? (
+              <>
+                <Input
+                  type='text'
+                  placeholder='Nom de la salle'
+                  value={newRoom.name}
+                  onChange={(e) =>
+                    setNewRoom({ ...newRoom, name: e.target.value })
+                  }
+                />
+                <Input
+                  type='number'
+                  placeholder='Capacité de la salle'
+                  value={newRoom.capacity}
+                  onChange={(e) =>
+                    setNewRoom({ ...newRoom, capacity: e.target.value })
+                  }
+                />
+              </>
+            ) : (
+              <Input
+                type='text'
+                placeholder='Nom du programme'
+                value={newRoom.name}
+                onChange={(e) =>
+                  setNewRoom({ ...newRoom, name: e.target.value })
+                }
+              />
+            )}
             <div className='flex justify-end gap-2'>
               <Button variant='outline' onClick={() => setDialogType(null)}>
                 Cancel
@@ -235,9 +286,41 @@ function Students() {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Dialog for deletion confirmation */}
+        <Dialog
+          open={dialogType === 'deleteRoom' || dialogType === 'deleteProgram'}
+          onOpenChange={() => {
+            setDialogType(null)
+            setSelectedItem(null)
+          }}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Confirm Deletion</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete this{' '}
+                {dialogType === 'deleteRoom' ? 'room' : 'program'}?
+              </DialogDescription>
+            </DialogHeader>
+            <div className='flex justify-end gap-2'>
+              <Button
+                variant='outline'
+                onClick={() => {
+                  setDialogType(null)
+                  setSelectedItem(null)
+                }}
+              >
+                Cancel
+              </Button>
+              <Button variant='destructive' onClick={handleDelete}>
+                Delete
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </>
   )
 }
-
-export default Students
+export default Home
