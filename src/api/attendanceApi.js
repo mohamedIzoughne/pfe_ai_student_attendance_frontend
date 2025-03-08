@@ -1,4 +1,4 @@
-import { useQuery, useMutation } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from './apiClient'
 
 export const useStudentsAttendances = (courseId, sessionId = null) => {
@@ -72,7 +72,11 @@ export const useGetWeeklyAttendance = (courseId) => {
   })
 }
 
-export const useGetTeacherWeeklyAttendance = (teacherId, courseId, weekNumber) => {
+export const useGetTeacherWeeklyAttendance = (
+  teacherId,
+  courseId,
+  weekNumber
+) => {
   return useQuery({
     queryKey: ['teacherWeeklyAttendance', teacherId, courseId, weekNumber],
     queryFn: async () => {
@@ -86,7 +90,6 @@ export const useGetTeacherWeeklyAttendance = (teacherId, courseId, weekNumber) =
     enabled: !!teacherId,
   })
 }
-
 
 export const useGetCoursesAttendanceSummary = (weekNumber) => {
   return useQuery({
@@ -114,3 +117,47 @@ export const useGetAttendanceByWeek = (weekNumber, courseId) => {
     enabled: !!weekNumber && !!courseId,
   })
 }
+
+export const useGetComplaints = (teacherId, sessionId, courseId) => {
+  return useQuery({
+    queryKey: ['complaints', teacherId, sessionId, courseId],
+    queryFn: async () => {
+      const { data } = await apiClient.get(
+        `/attendance/complaints/${teacherId}?${
+          sessionId ? `session_id=${sessionId}&` : ''
+        }${courseId ? `course_id=${courseId}` : ''}`
+      )
+      return data
+    },
+    enabled: !!teacherId,
+  })
+}
+  export const useRefuseComplaint = () => {
+    const queryClient = useQueryClient()
+    return useMutation({
+      mutationFn: async ( complaintId ) => {
+        const { data } = await apiClient.delete(
+          `/attendance/complaints/${complaintId}`
+        )
+        return data
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries(['complaints'])
+      },
+    })
+  }
+
+  export const useAcceptComplaint = () => {
+    const queryClient = useQueryClient()
+    return useMutation({
+      mutationFn: async ( complaintId ) => {
+        const { data } = await apiClient.put(
+          `/attendance/complaints/${complaintId}/accept`
+        )
+        return data
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries(['complaints'])
+      },
+    })
+  }

@@ -34,3 +34,17 @@ export const generateWeeks = () => {
     id: totalWeeks - i,
   }))
 }
+
+export function formatDate(dateString) {
+  const dateObj = new Date(dateString)
+  const options = { year: 'numeric', month: 'long', day: 'numeric' }
+  return dateObj.toLocaleDateString('en-US', options)
+}
+
+
+export function formatDateWithoutYear(dateString) {
+  const dateObj = new Date(dateString)
+
+  const options = { month: 'long', day: 'numeric' }
+  return dateObj.toLocaleDateString('en-US', options)
+}

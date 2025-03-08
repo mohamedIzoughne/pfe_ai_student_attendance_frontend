@@ -24,18 +24,19 @@ export function ComboboxDemo({
   placeholder = 'Select an option...',
   options = [],
   onSelect = () => {},
+  className = '',
 }) {
   const [isOpen, setIsOpen] = useState(false)
   const [selectedOption, setSelectedOption] = useState({})
 
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
+    <Popover  open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <Button
           variant='outline'
           role='combobox'
           aria-expanded={isOpen}
-          className='flex items-center justify-between px-4 py-2'
+          className={'flex items-center justify-between px-4 py-2 '+ className}
           style={{ width }}
         >
           <span className='truncate'>

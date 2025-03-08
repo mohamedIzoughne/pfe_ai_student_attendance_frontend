@@ -113,9 +113,6 @@ export const useCreateCourse = () => {
   })
 }
 
-
-
-
 export const useGetSessions = (courseId) => {
   return useQuery({
     queryKey: ['sessions', courseId],
@@ -126,6 +123,29 @@ export const useGetSessions = (courseId) => {
       return data.sessions
     },
     enabled: !!courseId,
+  })
+}
+
+export const useGetExams = (teacherId, subjectId, examDate, courseId) => {
+  return useQuery({
+    queryKey: ['exams', teacherId, subjectId, examDate, courseId], // Unique query key
+    queryFn: async () => {
+      // Build the URL with optional query params
+      let url = `/curriculum/exams/${teacherId}`
+      const params = new URLSearchParams()
+
+      if (subjectId) params.append('subjectId', subjectId)
+      if (examDate) params.append('examDate', examDate.toISOString())
+      if (courseId) params.append('courseId', courseId)
+
+      if (params.toString()) {
+        url += `?${params.toString()}`
+      }
+
+      const { data } = await apiClient.get(url)
+      return data
+    },
+    enabled: !!teacherId, // Only fetch if teacherId exists
   })
 }
 

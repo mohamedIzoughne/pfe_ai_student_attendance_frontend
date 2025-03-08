@@ -84,6 +84,32 @@ export const useGetTeacherGenderData = (teacherId, courseId) => {
   })
 }
 
+export const useGetTeacherSubjects = (teacherId) => {
+  return useQuery({
+    queryKey: ['teacherSubjects', teacherId],
+    queryFn: async () => {
+      const { data } = await apiClient.get(
+        `/user/teacher/${teacherId}/subjects`
+      )
+      return data
+    },
+    enabled: Boolean(teacherId),
+  })
+}
+
+export const useGetTeacherSubjectsByCourse = (teacherId, courseId) => {
+  return useQuery({
+    queryKey: ['teacherSubjects', teacherId, courseId],
+    queryFn: async () => {
+      const { data } = await apiClient.get(
+        `/user/teacher/${teacherId}/subjects/${courseId}`
+      )
+      return data
+    },
+    enabled: Boolean(teacherId) && Boolean(courseId),
+  })
+}
+
 // export const useGetGenderData = (schoolId) => {
 //   return useMutation({
 //     mutationFn: async () => {

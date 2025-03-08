@@ -23,6 +23,30 @@ import { FaRegHandPaper } from "react-icons/fa";
 
 function Students() {
   const [notifications, setNotifications] = useState(6);
+  const [isEditing, setIsEditing] = useState(false);
+  const [userInfo, setUserInfo] = useState({
+    fullName: "Mohammed Izourne",
+    phoneNumber: "+212 638344943",
+    email: "izourne@gmail.com",
+    class: "GI,group 3",
+    studentId: "izourne@gmail.com",
+  });
+
+  const toggleEdit = () => {
+    setIsEditing(!isEditing);
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setUserInfo((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+  const saveChanges = () => {
+    // Ici, vous pourriez ajouter une logique pour envoyer les données à un serveur
+    setIsEditing(false);
+  };
 
   const handleNotificationClick = () => {
     if (notifications > 0) {
@@ -108,57 +132,128 @@ function Students() {
         </div>
 
         <div className="student-admin-infos student-admin-infos-2 ">
-          <div className="std-info ">
-            <div className="st-info-header">
-              <h2>Personal info</h2>
-              <FiEdit3 className="mx-6 my-2 cursor-pointer" />
+          <div className="content-std flex">
+            <div className="std-info ">
+              <div className="st-info-header">
+                <h2>Personal info</h2>
+                <FiEdit3
+                  className="mx-6 my-2 cursor-pointer"
+                  onClick={toggleEdit}
+                />
+              </div>
+
+              <div className="Inpt-infos ">
+                <div className="col-12 col-md-6 w-1/2">
+                  <div>
+                    <label htmlFor="">Full Name</label>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        name="fullName"
+                        value={userInfo.fullName}
+                        onChange={handleChange}
+                        className="information"
+                      />
+                    ) : (
+                      <div className="information">{userInfo.fullName}</div>
+                    )}
+                  </div>
+                  <div>
+                    <label htmlFor="">Phone number</label>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        name="phoneNumber"
+                        value={userInfo.phoneNumber}
+                        onChange={handleChange}
+                        className="information"
+                      />
+                    ) : (
+                      <div className="information">{userInfo.phoneNumber}</div>
+                    )}
+                  </div>
+                  <div>
+                    <label htmlFor="">Email</label>
+                    {isEditing ? (
+                      <input
+                        type="email"
+                        name="email"
+                        value={userInfo.email}
+                        onChange={handleChange}
+                        className="information"
+                      />
+                    ) : (
+                      <div className="information">{userInfo.email}</div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="col-12 col-md-6 w-1/2">
+                  <div>
+                    <label htmlFor="">Class</label>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        name="class"
+                        value={userInfo.class}
+                        onChange={handleChange}
+                        className="information"
+                      />
+                    ) : (
+                      <div className="information">{userInfo.class}</div>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="">Student ID</label>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        name="studentId"
+                        value={userInfo.studentId}
+                        onChange={handleChange}
+                        className="information"
+                      />
+                    ) : (
+                      <div className="information">{userInfo.studentId}</div>
+                    )}
+                  </div>
+                </div>
+              </div>
+              {isEditing && (
+                <div className="flex justify-end mt-4 mb-2">
+                  <button
+                    onClick={() => setIsEditing(false)}
+                    className="px-4 py-2 mr-2  border rounded text-gray-700 hover:bg-gray-100"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    onClick={saveChanges}
+                    className="px-4 py-2 mr-4  bg-blue-500 text-white rounded hover:bg-blue-600"
+                  >
+                    Enregistrer
+                  </button>
+                </div>
+              )}
             </div>
-
-            <div className="Inpt-infos ">
-              <div className="col-12 col-md-6 w-1/2">
-                <div>
-                  <label htmlFor="">Full Name</label>
-                  <div className="information">Mohammed Izourne</div>
-                </div>
-                <div>
-                  <label htmlFor="">Phone number</label>
-                  <div className="information">+212 638344943</div>
-                </div>
-                <div>
-                  <label htmlFor="">Email</label>
-                  <div className="information">izourne@gmail.com</div>
-                </div>
-              </div>
-
-              <div className="col-12 col-md-6 w-1/2">
-                <div>
-                  <label htmlFor="">Class</label>
-                  <div className="information">GI,group 3</div>
+            <div className="infos-supple">
+              <div className="std-info-contain std-info-contain-2">
+                <div className="div-img">
+                  <img src={manImage41} alt="" />
                 </div>
 
                 <div>
-                  <label htmlFor="">Student ID</label>
-                  <div className="information">izourne@gmail.com</div>
+                  <h1>Mohammed Izourne</h1>
+                  <p>Izourne@gmail.com</p>
                 </div>
               </div>
-            </div>
-          </div>
-          <div className="infos-supple">
-            <div className="std-info-contain std-info-contain-2">
-              <div className="div-img">
-                <img src={manImage41} alt="" />
-              </div>
-
-              <div>
-                <h1>Mohammed Izourne</h1>
-                <p>Izourne@gmail.com</p>
-              </div>
-            </div>
-            <div className="hometown hometown-2">
-              <h1>Hometown</h1>
-              <div>
-                <div className="information">
-                  Taznakht, Ouarzazate, Drâa-Tafilalet
+              <div className="hometown hometown-2">
+                <h1>Hometown</h1>
+                <div>
+                  <div className="information">
+                    Taznakht, Ouarzazate, Drâa-Tafilalet
+                  </div>
                 </div>
               </div>
             </div>

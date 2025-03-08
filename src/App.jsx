@@ -17,17 +17,17 @@ function App() {
           <Route key={path} path={path} element={element} />
         ))}
 
-        <Route path='/' element={<StudentPage />} />
-        <Route path='/image-cut' element={<ImageCutterPage />} />
+        {/* <Route path='/' element={<StudentPage />} />
+        <Route path='/image-cut' element={<ImageCutterPage />} /> */}
 
         {/* Protected routes based on role */}
-        {/* <Route path='/' element={<Layout />}>
+        <Route path='/' element={<Layout />}>
           {routes
             .filter((route) => route.roles.includes(userRole))
             .map(({ path, element }) => (
               <Route key={path} path={path} element={element} />
             ))}
-        </Route> */}
+        </Route>
       </Routes>
     </Router>
   )
