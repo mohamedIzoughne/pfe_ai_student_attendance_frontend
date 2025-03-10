@@ -149,6 +149,55 @@ export const useGetExams = (teacherId, subjectId, examDate, courseId) => {
   })
 }
 
+export const useRemoveExam = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (examId) => {
+      const { data } = await apiClient.delete(`/curriculum/exams/${examId}`)
+      return data
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries(['exams'])
+    },
+  })
+}
+
+export const useUpdateExam = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ examId, examData }) => {
+      const { data } = await apiClient.put(
+        `/curriculum/exams/${examId}`,
+        examData
+      )
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['exams'])
+    },
+  })
+}
+
+export const useCreateExam = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ teacherId, examData }) => {
+      const { data } = await apiClient.post(
+        `/curriculum/exams/${teacherId}`,
+        examData
+      )
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['exams'])
+    },
+  })
+}
+
+
 export const useGetRooms = (schoolId) => {
   return useQuery({
     queryKey: ['rooms', schoolId],
@@ -235,3 +284,42 @@ export const useGetTeacherCourses = (teacherId) => {
     enabled: !!teacherId, // Only run when teacherId is available
   })
 }
+
+export const useGetStudentQuizStats = (studentId) => {
+  return useQuery({
+    queryKey: ['studentQuizStats', studentId],
+    queryFn: async () => {
+      const { data } = await apiClient.get(
+        `/curriculum/students/${studentId}/quiz-stats`
+      )
+      return data
+    },
+    enabled: !!studentId, // Only run when studentId is available
+  })
+}
+
+export const useRemoveQuiz = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (quizId) => {
+      const { data } = await apiClient.delete(`/curriculum/quiz/${quizId}`)
+      return data
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries(['quizzes'])
+    },
+  })
+}
+
+// export const useRemoveExam = () => {
+//   const queryClient = useQueryClient()
+//   return useMutation({
+//     mutationFn: async (examId) => {
+//       const { data } = await apiClient.delete(`/curriculum/exam/${examId}`)
+//       return data
+//     },
+//     onSuccess: (_, variables) => {
+//       queryClient.invalidateQueries(['exams'])
+//     },
+//   })
+// }

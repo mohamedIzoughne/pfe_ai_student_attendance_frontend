@@ -48,3 +48,14 @@ export function formatDateWithoutYear(dateString) {
   const options = { month: 'long', day: 'numeric' }
   return dateObj.toLocaleDateString('en-US', options)
 }
+
+export function formatMinutes(minutes) {
+  const hours = Math.floor(minutes / 60)
+  const remainingMinutes = minutes % 60
+  
+  if (remainingMinutes === 0) {
+    return `${hours}h`
+  }
+  
+  return `${hours}h${remainingMinutes}m`
+}

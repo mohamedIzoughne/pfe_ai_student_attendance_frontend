@@ -80,7 +80,7 @@ const PieChartComponent = ({
   innerRadius = 60,
   outerRadius = 80,
   colors = ['#FF9066', '#8280FF'],
-  data = [],
+  data = []
 }) => {
   const [activeIndex, setActiveIndex] = useState(0)
 
@@ -108,5 +108,4 @@ const PieChartComponent = ({
     </PieChart>
   )
 }
-
 export default PieChartComponent

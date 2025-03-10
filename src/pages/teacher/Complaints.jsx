@@ -37,6 +37,7 @@ import {
   DialogFooter,
   DialogContent,
 } from '@/components/ui/dialog'
+import { useEffect } from 'react'
 
 const Complaints = () => {
   const { data: courses } = useGetTeacherCourses(1)
@@ -50,9 +51,26 @@ const Complaints = () => {
   )
   const { mutate: refuseComplaint } = useRefuseComplaint()
   const { mutate: acceptComplaint } = useAcceptComplaint()
+  const [searchTerm, setSearchTerm] = useState('')
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
 
-  // Track selected complaint for confirmation
   const [complaintToRefuse, setComplaintToRefuse] = useState(null)
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm)
+    }, 300)
+
+    return () => clearTimeout(timer)
+  }, [searchTerm])
+
+  const filteredComplaints = React.useMemo(() => {
+    return complaints?.filter((complaint) =>
+      complaint.studentName
+        .toLowerCase()
+        .includes(debouncedSearchTerm.toLowerCase())
+    )
+  }, [complaints, debouncedSearchTerm])
 
   return (
     <>
@@ -67,7 +85,11 @@ const Complaints = () => {
 
       <div className='div-center'>
         <div>
-          <Input placeholder='Search Student name or id' />
+          <Input
+            placeholder='Search Student name'
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
           <img src={manImage2} alt='' />
         </div>
 
@@ -102,7 +124,7 @@ const Complaints = () => {
           </tr>
         </thead>
         <tbody>
-          {complaints?.map((complaint) => (
+          {filteredComplaints?.map((complaint) => (
             <tr key={complaint.id}>
               <td className='std-idd'>{complaint.studentId}</td>
               <td className='std-namee'>{complaint.studentName}</td>
@@ -163,5 +185,4 @@ const Complaints = () => {
     </>
   )
 }
-
 export default Complaints

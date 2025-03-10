@@ -161,3 +161,29 @@ export const useGetComplaints = (teacherId, sessionId, courseId) => {
       },
     })
   }
+
+  export const useGetStudentLastWeekAttendance = (studentId) => {
+    return useQuery({
+      queryKey: ['studentLastWeekAttendance', studentId],
+      queryFn: async () => {
+        const { data } = await apiClient.get(
+          `/attendance/students/${studentId}/last-week-attendance`
+        )
+        return data
+      },
+      enabled: !!studentId,
+    })
+  }
+
+export const useGetStudentAttendanceRate = (studentId, subjectId) => {
+  return useQuery({
+    queryKey: ['studentAttendanceRate', studentId, subjectId],
+    queryFn: async () => {
+      const { data } = await apiClient.get(
+        `/attendance/students/${studentId}/attendance-rate${subjectId ? `?studentId=${subjectId}` : ''}`
+      )
+      return data
+    },
+    enabled: !!studentId,
+  })
+}

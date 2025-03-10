@@ -19,7 +19,11 @@ const routes = [
     element: <AttendanceMarking />,
     roles: ['teacher'],
   },
-  { path: 'students', element: <Students />, roles: ['admin', 'teacher'] },
+  {
+    path: 'students/:studentId?',
+    element: <Students />,
+    roles: ['admin', 'teacher'],
+  },
   {
     path: 'complaints',
     element: <Complaints />,

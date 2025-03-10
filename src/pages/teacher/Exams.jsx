@@ -1,5 +1,5 @@
 import './Exams.css'
-import { Bell } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { useState } from 'react'
 import { ComboboxDemo } from '@/components/ui/ComboboxDemo'
 import { IoMdTime } from 'react-icons/io'
@@ -18,10 +18,13 @@ import {
 } from '@/components/ui/popover'
 import { format } from 'date-fns'
 
-import manImage10 from '@/assets/images/man-438081_960_720.png'
-import manImage11 from '@/assets/images/More.png'
-
-import { useGetExams, useGetTeacherCourses } from '@/api/curriculumApi'
+import {
+  useCreateExam,
+  useGetExams,
+  useGetTeacherCourses,
+  useRemoveExam,
+  useUpdateExam,
+} from '@/api/curriculumApi'
 
 import { formatDate } from '@/lib/utils'
 import Header from '@/components/Header'
@@ -49,23 +52,40 @@ import {
   // SelectItem,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/UI/input'
+import { Label } from '@/components/UI/label'
+import { formatMinutes } from '@/lib/utils'
 
 const Exams = () => {
   const [selectedSubject, setSelectedSubject] = useState({})
   const [selectedCourse, setSelectedCourse] = useState({})
-  const [examName, setExamName] = useState('')
-  const [duration, setDuration] = useState('')
-  const [dueDate, setDueDate] = useState()
+  const [examFormData, setExamFormData] = useState({
+    id: null,
+    name: '',
+    subjectId: null,
+    duration: 0,
+    dueDate: null,
+    selectedCourse: {},
+    selectedSubject: {},
+  })
+
   const [date, setDate] = useState()
   const [showDialog, setShowDialog] = useState(false)
   const [selectedExam, setSelectedExam] = useState(null)
-  const [modalType, setModalType] = useState(null) // 'edit' or 'delete'
+  const [modalType, setModalType] = useState(null) // 'edit', 'delete', or 'add'
 
+  const { mutate: updateExam } = useUpdateExam()
+  const { mutate: removeExam } = useRemoveExam()
+  const { mutate: addExam } = useCreateExam() // Add this hook for creating exams
   const { data: courses } = useGetTeacherCourses(1)
   const { data: subjects } = useGetTeacherSubjectsByCourse(
     1,
     selectedCourse?.id
   )
+  const { data: editingExamSubjects } = useGetTeacherSubjectsByCourse(
+    1,
+    examFormData.selectedCourse.id
+  )
+
   const { data: exams } = useGetExams(
     1,
     selectedSubject?.id,
@@ -73,15 +93,38 @@ const Exams = () => {
     selectedCourse?.id
   )
 
+  const handleAddExam = () => {
+    // Reset the editingExam state to empty values for a new exam
+    setExamFormData({
+      id: null,
+      name: '',
+      subjectId: null,
+      duration: 0,
+      dueDate: null,
+      selectedCourse: {},
+      selectedSubject: {},
+    })
+    setModalType('add')
+    setShowDialog(true)
+  }
+
   const handleEditExam = (exam) => {
     setSelectedExam(exam)
-    setExamName(exam.examName)
-    setSelectedCourse({ id: exam.courseId, name: exam.courseName })
-    setSelectedSubject({ id: exam.subjectId, name: exam.subjectName })
-    setDuration(exam.duration)
-    setDueDate(new Date(exam.dueDate))
+    setExamFormData({
+      id: exam.id,
+      name: exam.examName,
+      selectedSubject: { id: exam.subjectId, name: exam.subjectName },
+      selectedCourse: { id: exam.courseId, name: exam.courseName },
+      duration: exam.duration,
+      dueDate: new Date(exam.dueDate),
+    })
+
     setModalType('edit')
     setShowDialog(true)
+  }
+
+  const handleEditingExam = (changedAttribute) => {
+    setExamFormData((prev) => ({ ...prev, ...changedAttribute }))
   }
 
   const handleDeleteExam = (exam) => {
@@ -91,19 +134,44 @@ const Exams = () => {
   }
 
   const handleConfirmDelete = () => {
-    console.log('Deleting exam:', selectedExam)
+    removeExam(selectedExam.id)
     setShowDialog(false)
   }
 
   const handleSaveExam = () => {
-    console.log('Saving exam:', {
-      examName,
-      selectedCourse,
-      selectedSubject,
-      duration,
-      dueDate,
-    })
+    if (modalType === 'edit') {
+      const editedExamData = {
+        examId: examFormData.id,
+        examData: {
+          name: examFormData.name,
+          subjectId: examFormData.selectedSubject.id,
+          duration: examFormData.duration,
+          dueDate: examFormData.dueDate,
+        },
+      }
+      updateExam(editedExamData)
+    } else if (modalType === 'add') {
+      const newExamData = {
+        name: examFormData.name,
+        subjectId: examFormData.selectedSubject.id,
+        duration: examFormData.duration,
+        dueDate: examFormData.dueDate,
+      }
+      addExam({ teacherId: 1, examData: newExamData })
+    }
+
     setShowDialog(false)
+  }
+
+  // Validate if form is complete
+  const isFormValid = () => {
+    return (
+      examFormData.name.trim() !== '' &&
+      ((examFormData.selectedCourse.id && examFormData.selectedSubject.id) ||
+        modalType === 'edit') &&
+      examFormData.duration > 0 &&
+      examFormData.dueDate
+    )
   }
 
   return (
@@ -151,6 +219,11 @@ const Exams = () => {
             placeholder='Select Subject'
           />
         </div>
+        <div>
+          <Button variant='outline' onClick={handleAddExam}>
+            <Plus className='stroke-[#848485]' />
+          </Button>
+        </div>
       </div>
 
       <div className='Principal'>
@@ -162,7 +235,7 @@ const Exams = () => {
                 <h1>{exam.examName}</h1>
                 <h5>{exam.courseName}</h5>
               </div>
-              <div className='two'>
+              <div className='two flex flex-col items-end'>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button className='block'>
@@ -180,7 +253,7 @@ const Exams = () => {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-                <span>{exam.duration}</span>
+                <span>{formatMinutes(exam.duration)}</span>
               </div>
             </div>
             <div className='More-date'>
@@ -191,47 +264,97 @@ const Exams = () => {
         ))}
       </div>
 
-      {/* Modal for Editing or Deleting */}
+      {/* Modal for Adding, Editing or Deleting */}
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent>
-          {modalType === 'edit' ? (
+          {modalType === 'edit' || modalType === 'add' ? (
             <>
               <DialogHeader>
-                <DialogTitle>Edit Exam</DialogTitle>
+                <DialogTitle>
+                  {modalType === 'edit' ? 'Edit Exam' : 'Add New Exam'}
+                </DialogTitle>
               </DialogHeader>
               <div>
+                <Label
+                  htmlFor='examName'
+                  className='mt-2 text-xs mb-1 ml-[2px]'
+                >
+                  Exam Name
+                </Label>
                 <Input
+                  id='examName'
                   className='mb-2'
-                  value={examName}
-                  onChange={(e) => setExamName(e.target.value)}
+                  value={examFormData.name}
+                  onChange={(e) => handleEditingExam({ name: e.target.value })}
                   placeholder='Exam Name'
                 />
+
+                <Label
+                  htmlFor='courseSelect'
+                  className='mt-2 text-xs mb-1 ml-[2px]'
+                >
+                  Select Course
+                </Label>
                 <ComboboxDemo
+                  id='courseSelect'
                   className='mb-2'
-                  onSelect={setSelectedCourse}
+                  onSelect={(selected) =>
+                    handleEditingExam({ selectedCourse: selected })
+                  }
                   placeholder='Select Course'
                   options={courses}
-                  value={selectedCourse}
+                  value={examFormData.selectedCourse}
                 />
+
+                <Label
+                  htmlFor='subjectSelect'
+                  className='mt-2 text-xs mb-1 ml-[2px]'
+                >
+                  Select Subject
+                </Label>
                 <ComboboxDemo
+                  id='subjectSelect'
                   className='mb-2'
-                  onSelect={setSelectedSubject}
+                  onSelect={(selected) =>
+                    handleEditingExam({ selectedSubject: selected })
+                  }
                   placeholder='Select Subject'
-                  options={subjects}
-                  value={selectedSubject}
+                  options={editingExamSubjects}
+                  value={examFormData.selectedSubject}
+                  disabled={!examFormData.selectedCourse.id}
                 />
+
+                <Label
+                  htmlFor='duration'
+                  className='mt-2 text-xs mb-1 ml-[2px]'
+                >
+                  Duration (minutes)
+                </Label>
                 <Input
-                  value={duration}
+                  id='duration'
+                  value={examFormData.duration}
                   className='mb-2'
-                  onChange={(e) => setDuration(e.target.value)}
+                  onChange={(e) =>
+                    handleEditingExam({
+                      duration: parseInt(e.target.value, 10) || 0,
+                    })
+                  }
                   placeholder='Duration (minutes)'
                   type='number'
+                  min='1'
                 />
+
+                <Label
+                  htmlFor='dueDate'
+                  className='block mt-2 text-xs mb-1 ml-[2px]'
+                >
+                  Select Due Date
+                </Label>
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button variant='outline'>
-                      {dueDate ? (
-                        format(dueDate, 'PPP')
+                    <Button id='dueDate' variant='outline'>
+                      {examFormData.dueDate ? (
+                        format(examFormData.dueDate, 'PPP')
                       ) : (
                         <span>Select Due Date</span>
                       )}
@@ -240,8 +363,8 @@ const Exams = () => {
                   <PopoverContent className='w-auto p-0'>
                     <Calendar
                       mode='single'
-                      selected={dueDate}
-                      onSelect={setDueDate}
+                      selected={examFormData.dueDate}
+                      onSelect={(date) => handleEditingExam({ dueDate: date })}
                       initialFocus
                     />
                   </PopoverContent>
@@ -254,7 +377,9 @@ const Exams = () => {
                 >
                   Cancel
                 </Button>
-                <Button onClick={handleSaveExam}>Save Changes</Button>
+                <Button onClick={handleSaveExam} disabled={!isFormValid()}>
+                  {modalType === 'edit' ? 'Save Changes' : 'Add Exam'}
+                </Button>
               </DialogFooter>
             </>
           ) : (
@@ -263,8 +388,8 @@ const Exams = () => {
                 <DialogTitle>Confirm Deletion</DialogTitle>
               </DialogHeader>
               <p>
-                Are you sure you want to delete the exam "
-                {selectedExam?.examName}"?
+                Are you sure you want to delete the exam &quot;
+                {selectedExam?.examName}&quot;?
               </p>
               <DialogFooter>
                 <Button

@@ -1,6 +1,8 @@
-const Loader = () => {
+import { twMerge } from 'tailwind-merge'
+
+const Loader = ({className = ''}) => {
   return (
-    <div className='h-dvh flex items-center justify-center'>
+    <div className={twMerge('h-dvh flex items-center justify-center', className)}>
       <div className='spinner'>
         <div></div>
         <div></div>

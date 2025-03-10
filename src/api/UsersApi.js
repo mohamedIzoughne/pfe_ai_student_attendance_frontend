@@ -118,3 +118,55 @@ export const useGetTeacherSubjectsByCourse = (teacherId, courseId) => {
 //     },
 //   })
 // }
+
+export const useGetStudentDetails = (studentId) => {
+  return useQuery({
+    queryKey: ['studentDetails', studentId],
+    queryFn: async () => {
+      const { data } = await apiClient.get(`/user/students/${studentId}`)
+      return data
+    },
+    enabled: Boolean(studentId),
+  })
+}
+
+export const useGetStudentMarks = (studentId, semester) => {
+  return useQuery({
+    queryKey: ['studentMarks', studentId, semester],
+    queryFn: async () => {
+      const { data } = await apiClient.get(
+        `/user/students/${studentId}/marks${
+          semester ? `?semester=${semester}` : ''
+        }`
+      )
+      return data
+    },
+    enabled: Boolean(studentId),
+  })
+}
+
+export const useSearchStudents = (nameQuery, courseId) => {
+  return useQuery({
+    queryKey: ['searchStudents', nameQuery, courseId],
+    queryFn: async () => {
+      const { data } = await apiClient.get(
+        `/user/students/search?name=${nameQuery}${
+          courseId ? `&courseId=${courseId}` : ''
+        }`
+      )
+      return data
+    },
+    // enabled: Boolean(nameQuery),
+  })
+}
+
+export const useGetStudentComplaints = (studentId) => {
+  return useQuery({
+    queryKey: ['studentComplaints', studentId],
+    queryFn: async () => {
+      const { data } = await apiClient.get(`/user/students/${studentId}/complaints`)
+      return data
+    },
+    enabled: Boolean(studentId),
+  })
+}
