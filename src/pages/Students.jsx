@@ -38,6 +38,17 @@ import {
   useGetStudentAttendanceRate,
   useGetStudentLastWeekAttendance,
 } from '@/api/attendanceApi'
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogClose,
+  DialogTitle,
+  DialogHeader,
+  DialogFooter,
+} from '@/components/UI/dialog'
+import { Label } from '@/components/UI/label'
+import { Button } from '@/components/UI/button'
 
 const SEMESTERS = [1, 2, 3, 4]
 
@@ -59,10 +70,6 @@ function StudentDetails({ studentId }) {
 
   console.log('student attendance rate------------', studentsAttendanceRate)
 
-  const toggleEdit = () => {
-    setIsEditing(!isEditing)
-  }
-
   const handleChange = (e) => {
     const { name, value } = e.target
   }
@@ -77,106 +84,104 @@ function StudentDetails({ studentId }) {
         <div className='std-info '>
           <div className='st-info-header'>
             <h2>Personal info</h2>
-            <FiEdit3
-              className='mx-6 my-2 cursor-pointer'
-              onClick={toggleEdit}
-            />
+            <Dialog>
+              <DialogTrigger>
+                <FiEdit3 className='mx-6 my-2 cursor-pointer' />
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Edit Personal Information</DialogTitle>
+                </DialogHeader>
+                <div className='grid gap-4 py-4'>
+                  <div className='grid grid-cols-4 items-center gap-4'>
+                    <Label htmlFor='fullName' className='text-right'>
+                      Full Name
+                    </Label>
+                    <Input
+                      id='fullName'
+                      defaultValue={userInfo?.fullName}
+                      className='col-span-3'
+                    />
+                  </div>
+                  <div className='grid grid-cols-4 items-center gap-4'>
+                    <Label htmlFor='phoneNumber' className='text-right'>
+                      Phone Number
+                    </Label>
+                    <Input
+                      id='phoneNumber'
+                      defaultValue={userInfo?.phoneNumber}
+                      className='col-span-3'
+                    />
+                  </div>
+                  <div className='grid grid-cols-4 items-center gap-4'>
+                    <Label htmlFor='email' className='text-right'>
+                      Email
+                    </Label>
+                    <Input
+                      id='email'
+                      defaultValue={userInfo?.email}
+                      className='col-span-3'
+                    />
+                  </div>
+                  <div className='grid grid-cols-4 items-center gap-4'>
+                    <Label htmlFor='course' className='text-right'>
+                      Course
+                    </Label>
+                    <Input
+                      id='course'
+                      defaultValue={userInfo?.course}
+                      className='col-span-3'
+                    />
+                  </div>
+                  <div className='grid grid-cols-4 items-center gap-4'>
+                    <Label htmlFor='studentId' className='text-right'>
+                      Student ID
+                    </Label>
+                    <Input
+                      id='studentId'
+                      defaultValue={userInfo?.id}
+                      className='col-span-3'
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <DialogClose asChild>
+                    <Button variant='outline'>Cancel</Button>
+                  </DialogClose>
+                  <Button onClick={saveChanges}>Save changes</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
 
           <div className='Inpt-infos '>
             <div className='col-12 col-md-6 w-1/2'>
               <div>
                 <label htmlFor=''>Full Name</label>
-                {isEditing ? (
-                  <input
-                    type='text'
-                    name='fullName'
-                    value={userInfo?.fullName}
-                    onChange={handleChange}
-                    className='information'
-                  />
-                ) : (
-                  <div className='information'>{userInfo?.fullName}</div>
-                )}
+                <div className='information'>{userInfo?.fullName}</div>
               </div>
               <div>
                 <label htmlFor=''>Phone number</label>
-                {isEditing ? (
-                  <input
-                    type='text'
-                    name='phoneNumber'
-                    value={userInfo?.phoneNumber}
-                    onChange={handleChange}
-                    className='information'
-                  />
-                ) : (
-                  <div className='information'>{userInfo?.phoneNumber}</div>
-                )}
+                <div className='information'>{userInfo?.phoneNumber}</div>
               </div>
               <div>
                 <label htmlFor=''>Email</label>
-                {isEditing ? (
-                  <input
-                    type='email'
-                    name='email'
-                    value={userInfo?.email}
-                    onChange={handleChange}
-                    className='information'
-                  />
-                ) : (
-                  <div className='information'>{userInfo?.email}</div>
-                )}
+                <div className='information'>{userInfo?.email}</div>
               </div>
             </div>
 
             <div className='col-12 col-md-6 w-1/2'>
               <div>
                 <label htmlFor=''>Course</label>
-                {isEditing ? (
-                  <input
-                    type='text'
-                    name='class'
-                    value={userInfo?.course}
-                    onChange={handleChange}
-                    className='information'
-                  />
-                ) : (
-                  <div className='information'>{userInfo?.course}</div>
-                )}
+                <div className='information'>{userInfo?.course}</div>
               </div>
 
               <div>
                 <label htmlFor=''>Student ID</label>
-                {isEditing ? (
-                  <input
-                    type='text'
-                    name='studentId'
-                    value={userInfo?.id}
-                    onChange={handleChange}
-                    className='information'
-                  />
-                ) : (
-                  <div className='information'>{userInfo?.id}</div>
-                )}
+                <div className='information'>{userInfo?.id}</div>
               </div>
             </div>
           </div>
-          {isEditing && (
-            <div className='flex justify-end mt-4 mb-2'>
-              <button
-                onClick={() => setIsEditing(false)}
-                className='px-4 py-2 mr-2  border rounded text-gray-700 hover:bg-gray-100'
-              >
-                Annuler
-              </button>
-              <button
-                onClick={saveChanges}
-                className='px-4 py-2 mr-4  bg-blue-500 text-white rounded hover:bg-blue-600'
-              >
-                Enregistrer
-              </button>
-            </div>
-          )}
         </div>
         <div className='infos-supple'>
           <div className='std-info-contain std-info-contain-2'>
@@ -309,7 +314,6 @@ function StudentDetails({ studentId }) {
     </div>
   )
 }
-
 function Students() {
   const { studentId } = useParams()
   const [selectedCourse, setSelectedCourse] = useState(null)

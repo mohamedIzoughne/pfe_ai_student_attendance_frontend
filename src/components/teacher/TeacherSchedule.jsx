@@ -1,4 +1,19 @@
 import { IoAddOutline } from 'react-icons/io5'
+import { useCreateSession, useGetTeacherCourses } from '@/api/curriculumApi'
+import { useState } from 'react'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog'
+import { Input } from '@/components/UI/input'
+import { Label } from '@/components/UI/label'
+import { Button } from '../UI/button'
+import { ComboboxDemo } from '../UI/ComboboxDemo'
+import { useGetTeacherSubjectsByCourse } from '@/api/UsersApi'
+import { useGetTeacherSessions, useDeleteSession } from '@/api/curriculumApi'
 
 const scheduleData = [
   {
@@ -35,6 +50,10 @@ const scheduleData = [
   },
 ]
 
+const TeachersList = () => {
+  
+}
+
 const TeacherSchedule = () => {
   const days = [
     'Monday',
@@ -45,11 +64,73 @@ const TeacherSchedule = () => {
     'Saturday',
   ]
   const hours = [
-    '08:30 - 10:15',
-    '10:30 - 12:15',
-    '14:30 - 16:15',
-    '16:30 - 18:15',
+    '08:30-10:15',
+    '10:30-12:15',
+    '14:30-16:15',
+    '16:30-18:15',
+    '08:30-12:15',
+    '14:30-18:15',
   ]
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [selectedTime, setSelectedTime] = useState('')
+  const [selectedDay, setSelectedDay] = useState('')
+  const [selectedSession, setSelectedSession] = useState(null)
+  const [sessionFormData, setSessionFormData] = useState({
+    name: '',
+    selectedCourse: {},
+    selectedSubject: {},
+    roomId: '',
+    color: '',
+  })
+
+  const createSession = useCreateSession()
+  const deleteSession = useDeleteSession()
+  const { data: sessions } = useGetTeacherSessions(1)
+  const { data: courses } = useGetTeacherCourses(1)
+  const { data: subjects } = useGetTeacherSubjectsByCourse(
+    1,
+    sessionFormData?.selectedCourse?.id
+  )
+
+  console.log('-----The-Subjects--------', subjects)
+
+  const handleAddClick = (day, time) => {
+    setSelectedDay(day)
+    setSelectedTime(time)
+    setSessionFormData({
+      name: '',
+      selectedCourse: {},
+      selectedSubject: {},
+      roomId: '',
+      color: '',
+    })
+    setIsDialogOpen(true)
+  }
+
+  const handleSessionClick = (session) => {
+    setSelectedSession(session)
+    setIsDeleteDialogOpen(true)
+  }
+
+  const handleDeleteSession = () => {
+    deleteSession.mutate(selectedSession.id)
+    setIsDeleteDialogOpen(false)
+  }
+
+  const handleEditingSession = (changedAttribute) => {
+    setSessionFormData((prev) => ({ ...prev, ...changedAttribute }))
+  }
+
+  const isFormValid = () => {
+    return (
+      sessionFormData.name.trim() !== '' &&
+      sessionFormData.selectedCourse.id &&
+      sessionFormData.selectedSubject.id &&
+      sessionFormData.roomId.trim() !== '' &&
+      sessionFormData.color.trim() !== ''
+    )
+  }
 
   return (
     <div className='div-Table'>
@@ -70,25 +151,30 @@ const TeacherSchedule = () => {
         <tbody>
           {hours.map((hour, hourIndex) => (
             <tr key={hourIndex}>
-              <td className='special'>{hour}</td>
+              <td className='special'>
+                <p>{hour.split('-')[0]}</p>
+                <p>-</p>
+                <p>{hour.split('-')[1]}</p>
+              </td>
               {days.map((day, dayIndex) => {
-                const session = scheduleData.find(
+                const session = sessions?.find(
                   (s) => s.day === day && s.time === hour
                 )
                 return (
                   <td key={dayIndex}>
                     {session ? (
                       <div
-                        className='th-div p-2 rounded'
+                        className='th-div p-2 rounded cursor-pointer'
                         style={{ backgroundColor: session.color }}
+                        onClick={() => handleSessionClick(session)}
                       >
                         <p>
                           {session.courseName} - {session.subjectName}
                         </p>
-                        <h2>{session.sessionName}</h2>
+                        <h2>{session.name}</h2>
                       </div>
                     ) : (
-                      <button>
+                      <button onClick={() => handleAddClick(day, hour)}>
                         <IoAddOutline className='stroke-[#538cac] Add-Button' />
                       </button>
                     )}
@@ -99,6 +185,137 @@ const TeacherSchedule = () => {
           ))}
         </tbody>
       </table>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New Session</DialogTitle>
+          </DialogHeader>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              createSession.mutate({
+                name: sessionFormData.name,
+                subjectId: sessionFormData.selectedSubject.id,
+                roomId: sessionFormData.roomId,
+                day: selectedDay,
+                time: selectedTime,
+                color: sessionFormData.color,
+                teacherId: 1,
+              })
+              setIsDialogOpen(false)
+            }}
+          >
+            <div>
+              <Label
+                htmlFor='sessionName'
+                className='mt-2 text-xs mb-1 ml-[2px]'
+              >
+                Session Name
+              </Label>
+              <Input
+                id='sessionName'
+                className='mb-2'
+                value={sessionFormData.name}
+                onChange={(e) => handleEditingSession({ name: e.target.value })}
+                placeholder='Session Name'
+              />
+
+              <Label
+                htmlFor='courseSelect'
+                className='mt-2 text-xs mb-1 ml-[2px]'
+              >
+                Select Course
+              </Label>
+              <ComboboxDemo
+                id='courseSelect'
+                className='mb-2'
+                onSelect={(selected) =>
+                  handleEditingSession({ selectedCourse: selected })
+                }
+                placeholder='Select Course'
+                options={courses}
+                // value={sessionFormData.selectedCourse}
+              />
+
+              <Label
+                htmlFor='subjectSelect'
+                className='mt-2 text-xs mb-1 ml-[2px]'
+              >
+                Select Subject
+              </Label>
+              <ComboboxDemo
+                id='subjectSelect'
+                className='mb-2'
+                onSelect={(selected) =>
+                  handleEditingSession({ selectedSubject: selected })
+                }
+                placeholder='Select Subject'
+                options={subjects}
+                // value={sessionFormData.selectedSubject}
+                disabled={!sessionFormData.selectedCourse.id}
+              />
+
+              <Label htmlFor='roomId' className='mt-2 text-xs mb-1 ml-[2px]'>
+                Room ID
+              </Label>
+              <Input
+                id='roomId'
+                className='mb-2'
+                value={sessionFormData.roomId}
+                onChange={(e) =>
+                  handleEditingSession({ roomId: e.target.value })
+                }
+                placeholder='Room ID'
+              />
+
+              <Label htmlFor='color' className='mt-2 text-xs mb-1 ml-[2px]'>
+                Color
+              </Label>
+              <Input
+                id='color'
+                className='mb-2'
+                value={sessionFormData.color}
+                onChange={(e) =>
+                  handleEditingSession({ color: e.target.value })
+                }
+                placeholder='Color (e.g. #FDFCE8)'
+              />
+            </div>
+            <DialogFooter>
+              <Button
+                onClick={() => setIsDialogOpen(false)}
+                variant='secondary'
+              >
+                Cancel
+              </Button>
+              <Button type='submit' disabled={!isFormValid()}>
+                Add Session
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Session</DialogTitle>
+          </DialogHeader>
+          <p>Are you sure you want to delete this session?</p>
+          <DialogFooter>
+            <Button
+              onClick={() => setIsDeleteDialogOpen(false)}
+              variant='secondary'
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleDeleteSession} variant='destructive'>
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

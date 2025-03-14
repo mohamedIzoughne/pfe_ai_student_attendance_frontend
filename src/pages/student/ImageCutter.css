@@ -1,0 +1,218 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Quicksand:wght@300..700&display=swap');
+
+body {
+    font-family: "Nunito Sans", serif;
+}
+
+.container-ImageCut {
+    padding: 40px;
+}
+
+.container-ImageCut .Header-ImageCut h2 {
+    font-size: 23px;
+    font-weight: bold;
+    margin-bottom: 6px;
+}
+
+.container-ImageCut .Header-ImageCut p {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.section-ImageCut {
+    width: 100%;
+    margin-top: 50px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.section-ImageCut .exemple-ImageCut , 
+.section-ImageCut .cutImage {
+    width: 60%;
+    border: 1px solid #E4E4E7;
+    padding: 60px 40px;
+    border-radius: 5px;
+}
+
+.section-ImageCut .cutImage {
+    width: 40%;
+    padding: 20px;
+    margin-left: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.cutImage h2 {
+    text-align: center;
+    font-weight: 500;
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+.section-ImageCut .exemple-ImageCut {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Styles pour la partie crop */
+.cropper-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-grow: 1;
+    width: 100%;
+}
+
+.upload-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 200px;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+}
+
+.upload-btn {
+    background-color: #4F46E5;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+}
+
+.upload-btn:hover {
+    background-color: #4338CA;
+}
+
+.file-input {
+    display: none;
+}
+
+.crop-frame-container {
+    width: 300px; /* Largeur fixe */
+    height: 272px; /* Hauteur fixe */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #2563eb;
+    border-radius: 8px;
+    padding: 50px 40px;
+    overflow: hidden;
+}
+
+.crop-frame {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background-color: #f3f4f6;
+    border-radius: 4px;
+    overflow: hidden;
+}
+.image-container {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+}
+
+/* img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /*Assure que l'image remplit le conteneur tout en conservant ses proportions*/
+/* }   */
+
+
+
+.zoom-controls {
+    display: flex;
+    align-items: center;
+    width: 80%;
+    margin: 20px auto;
+}
+
+.zoom-slider {
+    flex-grow: 1;
+    height: 2px;
+    appearance: none;
+    background: linear-gradient(to right, #1E56C2 var(--zoom-value), #eee var(--zoom-value)); /* Utilisation de linear-gradient */
+    outline: none;
+    border-radius: 2px;
+}
+
+.zoom-slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #1E56C2;
+    cursor: pointer;
+}
+
+.zoom-icon {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 24px;
+    height: 24px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #6b7280;
+    cursor: pointer;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    /* justify-content: space-between; */
+    width: 100%;
+    margin-top: 10px;
+}
+
+.cancel-btn, .save-btn {
+    padding: 10px;
+    width: 30%;
+    font-weight: 600;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.cancel-btn {
+    background-color: white;
+    color: #1E56C2;
+    border: 1px solid #1E56C2;
+    margin-right: 10%;
+}
+
+.save-btn {
+    background-color: #2563eb;
+    color: white;
+}
+
+.cancel-btn:hover {
+    background-color: #f3f4f6;
+}
+
+.save-btn:hover {
+    background-color: #1d4ed8;
+}
+
+/* Surcharge des styles de react-image-crop pour avoir un cadre rectangulaire */
+.ReactCrop__crop-selection {
+    border: 2px solid black !important;
+    border-radius: 0 !important;
+}
+
+/* Styles pour les marqueurs de règle des tiers */
+.ReactCrop__rule-of-thirds-h::before,
+.ReactCrop__rule-of-thirds-h::after,
+.ReactCrop__rule-of-thirds-v::before,
+.ReactCrop__rule-of-thirds-v::after {
+    background-color: rgba(0, 0, 0, 0.3) !important;
+}

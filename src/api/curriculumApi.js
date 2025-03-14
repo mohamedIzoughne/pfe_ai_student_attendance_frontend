@@ -197,7 +197,6 @@ export const useCreateExam = () => {
   })
 }
 
-
 export const useGetRooms = (schoolId) => {
   return useQuery({
     queryKey: ['rooms', schoolId],
@@ -323,3 +322,207 @@ export const useRemoveQuiz = () => {
 //     },
 //   })
 // }
+
+export const useUpdateSubject = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ subjectId, name }) => {
+      const { data } = await apiClient.put(
+        `/curriculum/subjects/${subjectId}`,
+        {
+          name,
+        }
+      )
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['subjects'])
+    },
+  })
+}
+
+export const useRemoveSubject = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (subjectId) => {
+      const { data } = await apiClient.delete(
+        `/curriculum/subjects/${subjectId}`
+      )
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['subjects'])
+    },
+  })
+}
+
+export const useCreateQuiz = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ name, dueDate, subjectId, teacherId, questions }) => {
+      const { data } = await apiClient.post('/curriculum/quiz', {
+        name,
+        dueDate,
+        subjectId,
+        teacherId,
+        questions: questions.map((question) => ({
+          text: question.text,
+          answers: question.answers,
+        })),
+      })
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['quizzes'])
+    },
+  })
+}
+
+export const useGetExamMarks = (examId) => {
+  return useQuery({
+    queryKey: ['examMarks', examId],
+    queryFn: async () => {
+      const { data } = await apiClient.get(
+        `/curriculum/exams/exam-marks/${examId}`
+      )
+      return data
+    },
+  })
+}
+
+export const useAddMark = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ examId, studentId, mark, notes }) => {
+      const { data } = await apiClient.post(
+        `/curriculum/exams/${examId}/marks`,
+        {
+          studentId,
+          mark,
+          notes,
+        }
+      )
+      return data
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries(['examMarks', variables.examId])
+    },
+  })
+}
+
+export const useImportMarks = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ examId, file }) => {
+      const formData = new FormData()
+      formData.append('file', file)
+      const { data } = await apiClient.post(
+        `/curriculum/exams/${examId}/marks/import`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      )
+      return data
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries(['examMarks', variables.examId])
+    },
+  })
+}
+
+export const useExportMarks = (examId) => {
+  return useQuery({
+    queryKey: ['exportMarks', examId],
+    queryFn: async () => {
+      const response = await apiClient.get(
+        `/curriculum/exams/${examId}/marks/export`,
+        {
+          responseType: 'blob',
+        }
+      )
+      const url = window.URL.createObjectURL(new Blob([response.data]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', `exam_${examId}_marks.xlsx`)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(url)
+      return response.data
+    },
+    enabled: false,
+  })
+}
+
+export const useUpdateMarkNotes = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ examId, studentId, notes }) => {
+      const { data } = await apiClient.put(
+        `/curriculum/exams/${examId}/marks/${studentId}/notes`,
+        { notes }
+      )
+      return data
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries(['examMarks', variables.examId])
+    },
+  })
+}
+
+export const useCreateSession = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({
+      name,
+      subjectId,
+      teacherId,
+      roomId,
+      day,
+      time,
+      color,
+    }) => {
+      const { data } = await apiClient.post('/curriculum/sessions', {
+        name,
+        subjectId,
+        teacherId,
+        roomId,
+        day,
+        time,
+        color,
+      })
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['sessions'])
+    },
+  })
+}
+
+export const useDeleteSession = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (sessionId) => {
+      const { data } = await apiClient.delete(
+        `/curriculum/sessions/${sessionId}`
+      )
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['sessions'])
+    },
+  })
+}
+
+export const useGetTeacherSessions = (teacherId) => {
+  return useQuery({
+    queryKey: ['teacherSessions', teacherId],
+    queryFn: async () => {
+      const { data } = await apiClient.get(`/curriculum/teacher-sessions/${teacherId}`)
+      return data.sessions
+    }
+  })
+}

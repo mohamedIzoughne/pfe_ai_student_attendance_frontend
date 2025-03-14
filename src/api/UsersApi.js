@@ -170,3 +170,27 @@ export const useGetStudentComplaints = (studentId) => {
     enabled: Boolean(studentId),
   })
 }
+
+
+export const useSearchTeachers = (nameQuery) => {
+  return useQuery({
+    queryKey: ['searchTeachers', nameQuery],
+    queryFn: async () => {
+      const { data } = await apiClient.get(
+        `/user/teachers/search?name=${nameQuery}`
+      )
+      return data
+    },
+  })
+}
+
+export const useGetTeacherDetails = (teacherId) => {
+  return useQuery({
+    queryKey: ['teacherDetails', teacherId],
+    queryFn: async () => {
+      const { data } = await apiClient.get(`/user/teachers/${teacherId}`)
+      return data
+    },
+    enabled: Boolean(teacherId),
+  })
+}

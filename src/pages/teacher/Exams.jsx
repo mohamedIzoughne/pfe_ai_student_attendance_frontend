@@ -37,23 +37,17 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
-import { Trash, Edit } from 'lucide-react'
 import {
   Dialog,
-  DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-  // Input,
-  // Select,
-  // SelectTrigger,
-  // SelectValue,
-  // SelectItem,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/UI/input'
 import { Label } from '@/components/UI/label'
 import { formatMinutes } from '@/lib/utils'
+import { useNavigate } from 'react-router-dom'
 
 const Exams = () => {
   const [selectedSubject, setSelectedSubject] = useState({})
@@ -67,6 +61,7 @@ const Exams = () => {
     selectedCourse: {},
     selectedSubject: {},
   })
+  const navigate = useNavigate()
 
   const [date, setDate] = useState()
   const [showDialog, setShowDialog] = useState(false)
@@ -245,6 +240,9 @@ const Exams = () => {
                   <DropdownMenuContent>
                     <DropdownMenuLabel>Options</DropdownMenuLabel>
                     <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => navigate(`/exams/exam-marks/${exam.id}`)}>
+                      View marks
+                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => handleEditExam(exam)}>
                       Edit
                     </DropdownMenuItem>

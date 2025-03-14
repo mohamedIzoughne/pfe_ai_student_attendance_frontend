@@ -11,9 +11,10 @@ import Layout from './components/Layout'
 import Teachers from './pages/admin/Teachers'
 import Courses from './pages/admin/Courses'
 import { default as AdminHome } from './pages/admin/Home'
+import ExamMarks from './pages/teacher/ExamMarks'
 
 const routes = [
-  { path: '/', element: <Home />, roles: ['admin', 'teacher', 'student'] },
+  { path: '/', element: <Home />, roles: ['teacher', 'student'] },
   {
     path: 'mark-attendance',
     element: <AttendanceMarking />,
@@ -33,6 +34,11 @@ const routes = [
   { path: 'admin', element: <AdminHome />, roles: ['admin'] },
   { path: 'teachers', element: <Teachers />, roles: ['admin'] },
   { path: 'courses', element: <Courses />, roles: ['admin'] },
+  {
+    path: 'exams/exam-marks/:examId',
+    element: <ExamMarks />,
+    roles: ['teacher'],
+  },
 ]
 
 const authRoutes = [

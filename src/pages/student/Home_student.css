@@ -1,0 +1,45 @@
+.div-head {
+    display: flex;
+    margin: 0;
+}
+
+.contanier-student {
+    
+    width: 100%;
+    /* min-height: calc(100vh - 120px); Subtract header height */
+    background-color: #F0F1F5;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    /* height: 100vh; */
+    
+    
+   
+    /* justify-content: center; Center the table horizontally */
+
+}
+
+.div-Table-student {
+    width: 70%; /* Increased width for better visibility */
+    background-color: white;
+    border-radius: 5px;
+    margin-right: 20px;
+    margin-top: 50px;
+
+}
+
+.end-part-2 {
+    margin-top: 50px;
+    /* height: 500px; */
+
+
+
+
+    /* height: 100vh; */
+}
+
+
+.Complaint-consult {
+    width: 98%;
+    margin-top: 50px;
+}

@@ -45,6 +45,24 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import {
+  useRemoveExam,
+  useRemoveQuiz,
+  useCreateExam,
+  useUpdateSubject,
+  useRemoveSubject,
+} from '@/api/curriculumApi'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
+
+import { Input } from '@/components/UI/input'
+import { Label } from '@/components/UI/label'
+import { Calendar } from '@/components/UI/calendar'
+import { format } from 'date-fns'
+import { useCreateQuiz } from '@/api/curriculumApi'
 
 function Home() {
   const { data: dashboardData } = useGetTeacherDashboardData(1) // Replace with actual teacherId
@@ -299,43 +317,241 @@ function Home() {
   )
 }
 
-const Subjects = () => {
-  const { data: subjects, isLoading, isError } = useGetTeacherSubjects(1)
-
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-  const [isExamDialogOpen, setIsExamDialogOpen] = useState(false)
-  const [isQuizDialogOpen, setIsQuizDialogOpen] = useState(false)
-  const [selectedSubject, setSelectedSubject] = useState(null)
-
-  const openDeleteDialog = (subject) => {
-    setSelectedSubject(subject)
-    setIsDeleteDialogOpen(true)
-  }
-
+const AddQuizDialog = ({ open, onOpenChange, subjectId }) => {
   const [questions, setQuestions] = useState([])
+  const { mutate: addQuiz } = useCreateQuiz()
+  const [quizName, setQuizName] = useState('')
+  const [dueDate, setDueDate] = useState('')
 
   const addQuestion = () => {
     setQuestions([...questions, { question: '', answers: ['', ''] }])
   }
 
   const updateQuestionText = (index, text) => {
-    const newQuestions = [...questions]
-    newQuestions[index].text = text
-    setQuestions(newQuestions)
+    setQuestions((questions) => {
+      const newQuestions = [...questions]
+      newQuestions[index].text = text
+      return newQuestions
+    })
   }
 
   const addAnswer = (qIndex) => {
-    const updatedQuestions = [...questions]
-    updatedQuestions[qIndex].answers.push('')
-    setQuestions(updatedQuestions)
+    setQuestions((questions) => {
+      const updatedQuestions = [...questions]
+      updatedQuestions[qIndex].answers.push('')
+      return updatedQuestions
+    })
   }
 
   const updateAnswer = (qIndex, aIndex, value) => {
-    const updatedQuestions = [...questions]
-    updatedQuestions[qIndex].answers[aIndex] = value
-    setQuestions(updatedQuestions)
+    setQuestions((questions) => {
+      const updatedQuestions = [...questions]
+      updatedQuestions[qIndex].answers[aIndex] = value
+      return updatedQuestions
+    })
   }
+
+  const addQuizHandler = () => {
+    console.log('The date---', dueDate)
+    if (questions.length === 0 || !quizName || !dueDate) return
+    addQuiz({
+      name: quizName,
+      dueDate,
+      subjectId,
+      teacherId: 1,
+      questions,
+    })
+    closeDialogHandler()
+  }
+
+  const closeDialogHandler = () => {
+    onOpenChange(false)
+    setQuestions([])
+    setQuizName('')
+    setDueDate('')
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className='max-h-[80vh] overflow-y-auto'>
+        <DialogHeader>
+          <DialogTitle>Add New Quiz</DialogTitle>
+        </DialogHeader>
+        <div>
+          <input
+            type='text'
+            placeholder='Quiz Name'
+            value={quizName}
+            onChange={(e) => setQuizName(e.target.value)}
+            className='w-full p-2 border rounded'
+          />
+          <input
+            type='date'
+            placeholder='Due Date'
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+            className='w-full p-2 border rounded mt-2'
+          />
+          <Button className='mt-2' onClick={addQuestion}>
+            Add Question
+          </Button>
+        </div>
+        <div className='max-h-[60vh] overflow-y-auto mt-2'>
+          {questions.map((question, qIndex) => (
+            <div key={qIndex} className='p-2 border rounded mt-2'>
+              <input
+                type='text'
+                placeholder='Question'
+                value={question.text}
+                onChange={(e) => updateQuestionText(qIndex, e.target.value)}
+                className='w-full p-2 border rounded'
+              />
+              {question.answers.map((answer, aIndex) => (
+                <input
+                  key={aIndex}
+                  type='text'
+                  placeholder={aIndex === 0 ? 'Correct answer' : 'Answer'}
+                  value={answer}
+                  onChange={(e) => updateAnswer(qIndex, aIndex, e.target.value)}
+                  className='w-full p-2 border rounded mt-2'
+                />
+              ))}
+              <Button className='mt-2' onClick={() => addAnswer(qIndex)}>
+                Add Answer
+              </Button>
+            </div>
+          ))}
+        </div>
+        <DialogFooter>
+          <Button variant='outline' onClick={closeDialogHandler}>
+            Cancel
+          </Button>
+          <Button onClick={addQuizHandler}>Add</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+const Subjects = () => {
+  const { data: subjects, isLoading, isError } = useGetTeacherSubjects(1)
+  const removeExam = useRemoveExam()
+  const removeQuiz = useRemoveQuiz()
+  const removeSubject = useRemoveSubject()
+  const updateSubject = useUpdateSubject()
+  const { mutate: addExam } = useCreateExam()
+
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [isExamDialogOpen, setIsExamDialogOpen] = useState(false)
+  const [isQuizDialogOpen, setIsQuizDialogOpen] = useState(false)
+  const [isDeleteExamDialogOpen, setIsDeleteExamDialogOpen] = useState(false)
+  const [isDeleteQuizDialogOpen, setIsDeleteQuizDialogOpen] = useState(false)
+  const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false)
+  const [selectedSubject, setSelectedSubject] = useState(null)
+  const [selectedExam, setSelectedExam] = useState(null)
+  const [selectedQuiz, setSelectedQuiz] = useState(null)
+  const [updatedSubjectName, setUpdatedSubjectName] = useState('')
+  const [examFormData, setExamFormData] = useState({
+    id: null,
+    name: '',
+    subjectId: null,
+    duration: 0,
+    dueDate: null,
+  })
+
+  const handleEditingExam = (changedAttribute) => {
+    setExamFormData((prev) => ({ ...prev, ...changedAttribute }))
+  }
+
+  const handleSaveExam = () => {
+    const newExamData = {
+      name: examFormData.name,
+      subjectId: selectedSubject.id,
+      duration: examFormData.duration,
+      dueDate: examFormData.dueDate,
+    }
+    addExam({ teacherId: 1, examData: newExamData })
+    setIsExamDialogOpen(false)
+  }
+
+  const isFormValid = () => {
+    return (
+      examFormData.name.trim() !== '' &&
+      selectedSubject?.id &&
+      examFormData.duration > 0 &&
+      examFormData.dueDate
+    )
+  }
+
+  const openDeleteDialog = (subject) => {
+    setSelectedSubject(subject)
+    setIsDeleteDialogOpen(true)
+  }
+
+  const openUpdateDialog = (subject) => {
+    setSelectedSubject(subject)
+    setUpdatedSubjectName(subject.name)
+    setIsUpdateDialogOpen(true)
+  }
+
+  const openAddQuizDialog = (subject) => {
+    setSelectedSubject(subject)
+    setIsQuizDialogOpen(true)
+  }
+
+  const handleUpdateSubject = () => {
+    updateSubject.mutate({
+      subjectId: selectedSubject.id,
+      name: updatedSubjectName,
+    })
+    setIsUpdateDialogOpen(false)
+  }
+
+  const openDeleteExamDialog = (exam) => {
+    setSelectedExam(exam)
+    setIsDeleteExamDialogOpen(true)
+  }
+
+  const openDeleteQuizDialog = (quiz) => {
+    setSelectedQuiz(quiz)
+    setIsDeleteQuizDialogOpen(true)
+  }
+
+  // const [questions, setQuestions] = useState([])
+
+  // const addQuestion = () => {
+  //   setQuestions([...questions, { question: '', answers: ['', ''] }])
+  // }
+
+  // const updateQuestionText = (index, text) => {
+  //   setQuestions((questions) => {
+  //     const newQuestions = [...questions]
+  //     newQuestions[index].text = text
+  //     return newQuestions
+  //   })
+  // }
+
+  // const addAnswer = (qIndex) => {
+  //   setQuestions((questions) => {
+  //     const updatedQuestions = [...questions]
+  //     updatedQuestions[qIndex].answers.push('')
+  //     return updatedQuestions
+  //   })
+  // }
+
+  // const updateAnswer = (qIndex, aIndex, value) => {
+  //   setQuestions((questions) => {
+  //     const updatedQuestions = [...questions]
+  //     updatedQuestions[qIndex].answers[aIndex] = value
+  //     return updatedQuestions
+  //   })
+  // }
+
+  // const addQuizHandler = () => {
+  //   if (questions.length === 0) return
+  //   console.log(questions)
+  // }
 
   return (
     <div className='end-part'>
@@ -344,7 +560,7 @@ const Subjects = () => {
           <h2>Your Subjects</h2>
           <span>{subjects?.length || 0}</span>
         </div>
-        <DropdownMenu>
+        {/* <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button>
               <IoEllipsisVertical className='treee' />
@@ -357,7 +573,7 @@ const Subjects = () => {
               <Plus className='w-4 h-4 mr-1' /> Add new subject
             </DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>
+        </DropdownMenu> */}
       </div>
 
       {subjects &&
@@ -385,16 +601,21 @@ const Subjects = () => {
                       <DropdownMenuLabel>Options</DropdownMenuLabel>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
-                        onClick={() => setIsExamDialogOpen(true)}
+                        onClick={() => {
+                          setSelectedSubject(subject)
+                          setIsExamDialogOpen(true)
+                        }}
                       >
                         <Plus className='w-4 h-4 mr-1' /> Add new exam
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        onClick={() => setIsQuizDialogOpen(true)}
+                        onClick={() => openAddQuizDialog(subject)}
                       >
                         <Plus className='w-4 h-4 mr-1' /> Add new quiz
                       </DropdownMenuItem>
-                      <DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => openUpdateDialog(subject)}
+                      >
                         <Edit className='w-4 h-4 mr-1' /> Edit
                       </DropdownMenuItem>
                       <DropdownMenuItem
@@ -409,7 +630,7 @@ const Subjects = () => {
               <div className='mod-end-part'>
                 {subject.quizzes &&
                   subject.quizzes.map((quiz, i) => (
-                    <div key={`exam-${i}`} className='mod-1'>
+                    <div key={`quiz-${i}`} className='mod-1'>
                       <div className='mod-1-1'>
                         <MdOutlineQuiz className='icon-mod' />
                         <div className='Info-Info'>
@@ -418,7 +639,10 @@ const Subjects = () => {
                         </div>
                       </div>
                       <div>
-                        <RiDeleteBinLine className='icon-mod icon-mod-delete' />
+                        <RiDeleteBinLine
+                          className='icon-mod icon-mod-delete'
+                          onClick={() => openDeleteQuizDialog(quiz)}
+                        />
                       </div>
                     </div>
                   ))}
@@ -433,7 +657,10 @@ const Subjects = () => {
                         </div>
                       </div>
                       <div>
-                        <RiDeleteBinLine className='icon-mod icon-mod-delete' />
+                        <RiDeleteBinLine
+                          className='icon-mod icon-mod-delete'
+                          onClick={() => openDeleteExamDialog(exam)}
+                        />
                       </div>
                     </div>
                   ))}
@@ -471,21 +698,59 @@ const Subjects = () => {
             <DialogTitle>Add New Exam</DialogTitle>
           </DialogHeader>
           <div>
-            <input
-              type='text'
+            <Label htmlFor='examName' className='mt-2 text-xs mb-1 ml-[2px]'>
+              Exam Name
+            </Label>
+            <Input
+              id='examName'
+              className='mb-2'
+              value={examFormData.name}
+              onChange={(e) => handleEditingExam({ name: e.target.value })}
               placeholder='Exam Name'
-              className='w-full p-2 border rounded'
             />
-            <input
+
+            <Label htmlFor='duration' className='mt-2 text-xs mb-1 ml-[2px]'>
+              Duration (minutes)
+            </Label>
+            <Input
+              id='duration'
+              value={examFormData.duration}
+              className='mb-2'
+              onChange={(e) =>
+                handleEditingExam({
+                  duration: parseInt(e.target.value, 10) || 0,
+                })
+              }
+              placeholder='Duration (minutes)'
               type='number'
-              placeholder='Duration'
-              className='w-full p-2 border rounded mt-2'
+              min='1'
             />
-            <input
-              type='date'
-              placeholder='Due Date'
-              className='w-full p-2 border rounded mt-2'
-            />
+
+            <Label
+              htmlFor='dueDate'
+              className='block mt-2 text-xs mb-1 ml-[2px]'
+            >
+              Select Due Date
+            </Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button id='dueDate' variant='outline'>
+                  {examFormData.dueDate ? (
+                    format(examFormData.dueDate, 'PPP')
+                  ) : (
+                    <span>Select Due Date</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className='w-auto p-0'>
+                <Calendar
+                  mode='single'
+                  selected={examFormData.dueDate}
+                  onSelect={(date) => handleEditingExam({ dueDate: date })}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
           </div>
           <DialogFooter>
             <Button
@@ -494,12 +759,14 @@ const Subjects = () => {
             >
               Cancel
             </Button>
-            <Button onClick={() => console.log('Adding exam...')}>Add</Button>
+            <Button onClick={handleSaveExam} disabled={!isFormValid()}>
+              Add Exam
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      <Dialog open={isQuizDialogOpen} onOpenChange={setIsQuizDialogOpen}>
+      {/* <Dialog open={isQuizDialogOpen} onOpenChange={setIsQuizDialogOpen}>
         <DialogContent className='max-h-[80vh] overflow-y-auto'>
           <DialogHeader>
             <DialogTitle>Add New Quiz</DialogTitle>
@@ -533,7 +800,7 @@ const Subjects = () => {
                   <input
                     key={aIndex}
                     type='text'
-                    placeholder='Answer'
+                    placeholder={aIndex === 0 ? 'Correct answer' : 'Answer'}
                     value={answer}
                     onChange={(e) =>
                       updateAnswer(qIndex, aIndex, e.target.value)
@@ -554,12 +821,16 @@ const Subjects = () => {
             >
               Cancel
             </Button>
-            <Button onClick={() => console.log('Adding quiz...', questions)}>
-              Add
-            </Button>
+            <Button onClick={addQuizHandler}>Add</Button>
           </DialogFooter>
         </DialogContent>
-      </Dialog>
+      </Dialog> */}
+
+      <AddQuizDialog
+        subjectId={selectedSubject?.id}
+        open={isQuizDialogOpen}
+        onOpenChange={setIsQuizDialogOpen}
+      />
 
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
@@ -578,9 +849,105 @@ const Subjects = () => {
             </Button>
             <Button
               variant='destructive'
-              onClick={() => console.log('Deleting subject...')}
+              onClick={() => {
+                removeSubject.mutate(selectedSubject.id)
+                setIsDeleteDialogOpen(false)
+              }}
             >
               Confirm Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={isDeleteExamDialogOpen}
+        onOpenChange={setIsDeleteExamDialogOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Exam Deletion</DialogTitle>
+          </DialogHeader>
+          <div>
+            Are you sure you want to delete exam <b>{selectedExam?.name}</b>?
+          </div>
+          <DialogFooter>
+            <Button
+              variant='outline'
+              onClick={() => setIsDeleteExamDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant='destructive'
+              onClick={() => {
+                removeExam.mutate(selectedExam.id)
+                setIsDeleteExamDialogOpen(false)
+              }}
+            >
+              Confirm Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={isDeleteQuizDialogOpen}
+        onOpenChange={setIsDeleteQuizDialogOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Quiz Deletion</DialogTitle>
+          </DialogHeader>
+          <div>
+            Are you sure you want to delete quiz <b>{selectedQuiz?.name}</b>?
+          </div>
+          <DialogFooter>
+            <Button
+              variant='outline'
+              onClick={() => setIsDeleteQuizDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant='destructive'
+              onClick={() => {
+                removeQuiz.mutate(selectedQuiz.id)
+                setIsDeleteQuizDialogOpen(false)
+              }}
+            >
+              Confirm Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isUpdateDialogOpen} onOpenChange={setIsUpdateDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Update Subject</DialogTitle>
+          </DialogHeader>
+          <div>
+            <Label htmlFor='subjectName'>Subject Name</Label>
+            <Input
+              id='subjectName'
+              value={updatedSubjectName}
+              onChange={(e) => setUpdatedSubjectName(e.target.value)}
+              placeholder='Enter new subject name'
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant='outline'
+              onClick={() => setIsUpdateDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleUpdateSubject}
+              disabled={!updatedSubjectName.trim()}
+            >
+              Update
             </Button>
           </DialogFooter>
         </DialogContent>
