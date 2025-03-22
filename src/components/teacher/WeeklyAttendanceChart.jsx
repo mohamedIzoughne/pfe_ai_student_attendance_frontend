@@ -6,46 +6,10 @@ import {
   YAxis,
   CartesianGrid,
   ResponsiveContainer,
+  Tooltip,
+  Legend,
 } from 'recharts'
 import { useState, useEffect } from 'react'
-
-const data = [
-  {
-    weekDay: 'Monday',
-    presence: 4000,
-    absence: 2400,
-  },
-  {
-    weekDay: 'Monday',
-    presence: 3000,
-    absence: 1398,
-  },
-  {
-    weekDay: 'Monday',
-    presence: 2000,
-    absence: 4800,
-  },
-  {
-    weekDay: 'Monday',
-    presence: 2780,
-    absence: 3908,
-  },
-  {
-    weekDay: 'Monday',
-    presence: 1890,
-    absence: 4800,
-  },
-  {
-    weekDay: 'Monday',
-    presence: 2390,
-    absence: 3800,
-  },
-  {
-    weekDay: 'Monday',
-    presence: 3490,
-    absence: 4300,
-  },
-]
 
 import {
   useGetTeacherWeeklyAttendance,
@@ -55,6 +19,27 @@ import { ComboboxDemo } from '../UI/ComboboxDemo'
 import { useGetCourses } from '@/api/curriculumApi'
 import { generateWeeks } from '@/lib/utils'
 
+const CustomTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div
+        className='custom-tooltip'
+        style={{
+          backgroundColor: '#fff',
+          padding: '10px',
+          border: '1px solid #ccc',
+        }}
+      >
+        <p className='label'>{`${label}`}</p>
+        <p style={{ color: '#8280FF' }}>{`Absence: ${payload[0].value}`}</p>
+        <p style={{ color: '#FF9066' }}>{`Presence: ${payload[1].value}`}</p>
+      </div>
+    )
+  }
+
+  return null
+}
+
 const WeeklyAttendanceChart = () => {
   const [selectedCourse, setSelectedCourse] = useState({})
   const [selectedWeek, setSelectedWeek] = useState({})
@@ -63,7 +48,7 @@ const WeeklyAttendanceChart = () => {
     selectedCourse.id,
     selectedWeek.id
   )
-  const { data: courses } = useGetCourses(1)
+  const { data: courses } = useGetCourses(1, 'teacher')
   const [weekOptions, setWeekOptions] = useState([])
 
   useEffect(() => {
@@ -97,16 +82,39 @@ const WeeklyAttendanceChart = () => {
               data={WeeklyAttendanceData}
               margin={{ right: 25, left: 30, top: 40 }}
             >
-              <CartesianGrid strokeDasharray='3 3' />
-              <XAxis dataKey='weekDay' interval='preserveEnd' />
-              <YAxis interval='preserveEnd' />
+              <CartesianGrid strokeDasharray='3 3' stroke='#f5f5f5' />
+              <XAxis
+                dataKey='weekDay'
+                interval='preserveEnd'
+                stroke='#666'
+                tick={{ fill: '#666' }}
+              />
+              <YAxis
+                interval='preserveEnd'
+                stroke='#666'
+                tick={{ fill: '#666' }}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <Legend
+                verticalAlign='top'
+                height={36}
+                formatter={(value) => (
+                  <span style={{ color: '#666' }}>{value}</span>
+                )}
+              />
               <Line
                 type='monotone'
                 dataKey='absence'
                 stroke='#8280FF'
+                strokeWidth={2}
                 activeDot={{ r: 8 }}
               />
-              <Line type='monotone' dataKey='presence' stroke='#FF9066' />
+              <Line
+                type='monotone'
+                dataKey='presence'
+                stroke='#FF9066'
+                strokeWidth={2}
+              />
             </LineChart>
           </ResponsiveContainer>
         </div>

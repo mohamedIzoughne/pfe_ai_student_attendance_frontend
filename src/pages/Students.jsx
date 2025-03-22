@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import './Students_admin.css'
 import manImage4 from '@/assets/images/man-438081_960_720.png'
 import manImage41 from '@/assets/images/image (2).png'
@@ -29,6 +29,7 @@ import {
 import { formatDate } from '@/lib/utils'
 import Header from '@/components/Header'
 import {
+  useGetCourses,
   useGetStudentQuizStats,
   useGetTeacherCourses,
 } from '@/api/curriculumApi'
@@ -49,6 +50,9 @@ import {
 } from '@/components/UI/dialog'
 import { Label } from '@/components/UI/label'
 import { Button } from '@/components/UI/button'
+import { Context } from '@/store'
+import { useEditStudent } from '@/api/UsersApi'
+import { SERVER_API } from '@/main'
 
 const SEMESTERS = [1, 2, 3, 4]
 
@@ -64,17 +68,80 @@ function StudentDetails({ studentId }) {
   )
   const { data: complaints } = useGetStudentComplaints(studentId)
   const { data: quizStats } = useGetStudentQuizStats(studentId)
+  const { userConfiguration } = useContext(Context)
+  const isTeacher = userConfiguration?.role === 'teacher'
+  const editStudent = useEditStudent(studentId)
+  const { data: studentAttendanceRate } = useGetStudentAttendanceRate(studentId)
 
-  const { data: studentsAttendanceRate } =
-    useGetStudentAttendanceRate(studentId)
-
-  console.log('student attendance rate------------', studentsAttendanceRate)
-
-  const handleChange = (e) => {
-    const { name, value } = e.target
+  if (!studentId) {
+    return (
+      <div className='flex flex-col items-center justify-center h-full min-h-[50vh] px-4 mx-auto mt-20'>
+        <div className='text-center max-w-md'>
+          <div className='mb-6'>
+            <svg
+              className='w-32 h-32 mx-auto text-blue-400'
+              viewBox='0 0 24 24'
+              fill='none'
+              xmlns='http://www.w3.org/2000/svg'
+            >
+              <path
+                d='M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z'
+                fill='currentColor'
+              />
+              <path
+                d='M20 12C20 16.4183 16.4183 20 12 20C7.58172 20 4 16.4183 4 12C4 7.58172 7.58172 4 12 4C16.4183 4 20 7.58172 20 12Z'
+                stroke='currentColor'
+                strokeWidth='2'
+              />
+              <path
+                d='M18 12H21'
+                stroke='currentColor'
+                strokeWidth='2'
+                strokeLinecap='round'
+              />
+              <path
+                d='M3 12H6'
+                stroke='currentColor'
+                strokeWidth='2'
+                strokeLinecap='round'
+              />
+              <path
+                d='M12 6V3'
+                stroke='currentColor'
+                strokeWidth='2'
+                strokeLinecap='round'
+              />
+              <path
+                d='M12 21V18'
+                stroke='currentColor'
+                strokeWidth='2'
+                strokeLinecap='round'
+              />
+            </svg>
+          </div>
+          <h2 className='text-2xl font-bold text-gray-800 mb-2'>
+            No Student Selected
+          </h2>
+          <p className='text-gray-500 mb-6'>
+            Please select a student from the list to view their detailed
+            information, academic performance, and attendance records.
+          </p>
+        </div>
+      </div>
+    )
   }
 
-  const saveChanges = () => {
+  const saveChanges = async (event) => {
+    event.preventDefault()
+    const formData = new FormData(event.target)
+    const data = {
+      name: formData.get('fullName'),
+      email: formData.get('email'),
+      phoneNumber: formData.get('phoneNumber'),
+      hometown: formData.get('hometown'),
+    }
+
+    await editStudent.mutateAsync(data)
     setIsEditing(false)
   }
 
@@ -84,72 +151,74 @@ function StudentDetails({ studentId }) {
         <div className='std-info '>
           <div className='st-info-header'>
             <h2>Personal info</h2>
-            <Dialog>
+            <Dialog
+              open={isEditing}
+              onOpenChange={setIsEditing}
+              onClose={() => setIsEditing(false)}
+            >
               <DialogTrigger>
                 <FiEdit3 className='mx-6 my-2 cursor-pointer' />
               </DialogTrigger>
               <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Edit Personal Information</DialogTitle>
-                </DialogHeader>
-                <div className='grid gap-4 py-4'>
-                  <div className='grid grid-cols-4 items-center gap-4'>
-                    <Label htmlFor='fullName' className='text-right'>
-                      Full Name
-                    </Label>
-                    <Input
-                      id='fullName'
-                      defaultValue={userInfo?.fullName}
-                      className='col-span-3'
-                    />
+                <form onSubmit={saveChanges}>
+                  <DialogHeader>
+                    <DialogTitle>Edit Personal Information</DialogTitle>
+                  </DialogHeader>
+                  <div className='grid gap-4 py-4'>
+                    <div className='grid grid-cols-4 items-center gap-4'>
+                      <Label htmlFor='fullName' className='text-right'>
+                        Full Name
+                      </Label>
+                      <Input
+                        id='fullName'
+                        name='fullName'
+                        defaultValue={userInfo?.fullName}
+                        className='col-span-3'
+                      />
+                    </div>
+                    <div className='grid grid-cols-4 items-center gap-4'>
+                      <Label htmlFor='phoneNumber' className='text-right'>
+                        Phone Number
+                      </Label>
+                      <Input
+                        id='phoneNumber'
+                        name='phoneNumber'
+                        defaultValue={userInfo?.phoneNumber}
+                        className='col-span-3'
+                      />
+                    </div>
+                    <div className='grid grid-cols-4 items-center gap-4'>
+                      <Label htmlFor='email' className='text-right'>
+                        Email
+                      </Label>
+                      <Input
+                        id='email'
+                        name='email'
+                        defaultValue={userInfo?.email}
+                        className='col-span-3'
+                      />
+                    </div>
+                    <div className='grid grid-cols-4 items-center gap-4'>
+                      <Label htmlFor='hometown' className='text-right'>
+                        Hometown
+                      </Label>
+                      <Input
+                        id='hometown'
+                        name='hometown'
+                        defaultValue={userInfo?.hometown}
+                        className='col-span-3'
+                      />
+                    </div>
                   </div>
-                  <div className='grid grid-cols-4 items-center gap-4'>
-                    <Label htmlFor='phoneNumber' className='text-right'>
-                      Phone Number
-                    </Label>
-                    <Input
-                      id='phoneNumber'
-                      defaultValue={userInfo?.phoneNumber}
-                      className='col-span-3'
-                    />
-                  </div>
-                  <div className='grid grid-cols-4 items-center gap-4'>
-                    <Label htmlFor='email' className='text-right'>
-                      Email
-                    </Label>
-                    <Input
-                      id='email'
-                      defaultValue={userInfo?.email}
-                      className='col-span-3'
-                    />
-                  </div>
-                  <div className='grid grid-cols-4 items-center gap-4'>
-                    <Label htmlFor='course' className='text-right'>
-                      Course
-                    </Label>
-                    <Input
-                      id='course'
-                      defaultValue={userInfo?.course}
-                      className='col-span-3'
-                    />
-                  </div>
-                  <div className='grid grid-cols-4 items-center gap-4'>
-                    <Label htmlFor='studentId' className='text-right'>
-                      Student ID
-                    </Label>
-                    <Input
-                      id='studentId'
-                      defaultValue={userInfo?.id}
-                      className='col-span-3'
-                    />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <DialogClose asChild>
-                    <Button variant='outline'>Cancel</Button>
-                  </DialogClose>
-                  <Button onClick={saveChanges}>Save changes</Button>
-                </DialogFooter>
+                  <DialogFooter>
+                    <DialogClose asChild>
+                      <Button type='button' variant='outline'>
+                        Cancel
+                      </Button>
+                    </DialogClose>
+                    <Button type='submit'>Save changes</Button>
+                  </DialogFooter>
+                </form>
               </DialogContent>
             </Dialog>
           </div>
@@ -185,10 +254,13 @@ function StudentDetails({ studentId }) {
         </div>
         <div className='infos-supple'>
           <div className='std-info-contain std-info-contain-2'>
-            <div className='div-img'>
-              <img src={manImage41} alt='' />
+            <div className='div-img w-20 h-20 overflow-hidden rounded-full mx-auto'>
+              <img
+                className='w-full h-full object-cover'
+                src={SERVER_API + userInfo?.imageUrl}
+                alt=''
+              />
             </div>
-
             <div>
               <h1>{userInfo?.fullName}</h1>
               <p>{userInfo?.email}</p>
@@ -249,75 +321,80 @@ function StudentDetails({ studentId }) {
               colors={['#F93C65', '#4880FF']}
               width={350}
               height={260}
-              data={studentsAttendanceRate || []}
+              data={studentAttendanceRate || []}
             />
           </div>
         </div>
       </div>
-      <div className='Last-part-students flex'>
-        <div className='Quizez'>
-          <h2>Total Quizes</h2>
-          <div className='Totall'>
-            <span>
-              {quizStats?.totalQuizzes < 10
-                ? `0${quizStats?.totalQuizzes}`
-                : quizStats?.totalQuizzes}
-            </span>
-          </div>
-          <div className='time-quizez flex justify-between'>
-            <div className='time-quize'>
-              <p className='success'>Success</p>
-              <div>
-                <span>
-                  {quizStats?.quizzesPassed < 10
-                    ? `0${quizStats?.quizzesPassed}`
-                    : quizStats?.quizzesPassed}
-                </span>
-              </div>
-            </div>
-            <div className='time-quize'>
-              <p className='failed'>Failed</p>
-              <div>
-                <span>
-                  {quizStats?.quizzesFailed < 10
-                    ? `0${quizStats?.quizzesFailed}`
-                    : quizStats?.quizzesFailed}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
 
-        <div className='complaints'>
-          <h2> Last Complaints</h2>
-          {complaints?.map((complaint) => (
-            <div
-              key={complaint.id}
-              className='Complaints-infos flex justify-between mt-2'
-            >
-              <div className='reason leading-none'>
-                <p>{complaint.excuse}</p>
-                <span>
-                  {complaint.sessionName} - {formatDate(complaint.date)}
-                </span>
+      {isTeacher && (
+        <div className='Last-part-students flex'>
+          <div className='Quizez'>
+            <h2>Total Quizes</h2>
+            <div className='Totall'>
+              <span>
+                {quizStats?.totalQuizzes < 10
+                  ? `0${quizStats?.totalQuizzes}`
+                  : quizStats?.totalQuizzes}
+              </span>
+            </div>
+            <div className='time-quizez flex justify-between'>
+              <div className='time-quize'>
+                <p className='success'>Success</p>
+                <div>
+                  <span>
+                    {quizStats?.quizzesPassed < 10
+                      ? `0${quizStats?.quizzesPassed}`
+                      : quizStats?.quizzesPassed}
+                  </span>
+                </div>
               </div>
-              <div className='icons-reason flex'>
-                <IoMdCheckmark className='fill-green-500 cursor-pointer mr-1' />
-                <FaRegHandPaper className='fill-red-500 cursor-pointer' />
+              <div className='time-quize'>
+                <p className='failed'>Failed</p>
+                <div>
+                  <span>
+                    {quizStats?.quizzesFailed < 10
+                      ? `0${quizStats?.quizzesFailed}`
+                      : quizStats?.quizzesFailed}
+                  </span>
+                </div>
               </div>
             </div>
-          ))}
-        </div>
+          </div>
 
-        <WeekPresenceTable />
-      </div>
+          <div className='complaints'>
+            <h2> Last Complaints</h2>
+            {complaints?.map((complaint) => (
+              <div
+                key={complaint.id}
+                className='Complaints-infos flex justify-between mt-2'
+              >
+                <div className='reason leading-none'>
+                  <p>{complaint.excuse}</p>
+                  <span>
+                    {complaint.sessionName} - {formatDate(complaint.date)}
+                  </span>
+                </div>
+                <div className='icons-reason flex'>
+                  <IoMdCheckmark className='fill-green-500 cursor-pointer mr-1' />
+                  <FaRegHandPaper className='fill-red-500 cursor-pointer' />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <WeekPresenceTable />
+        </div>
+      )}
     </div>
   )
 }
+
 function Students() {
+  const { userConfiguration } = useContext(Context)
   const { studentId } = useParams()
   const [selectedCourse, setSelectedCourse] = useState(null)
-  const { data: courses } = useGetTeacherCourses(1)
+  const { data: courses } = useGetCourses(1, userConfiguration.role)
   const { isLoading } = useGetStudentDetails(studentId)
 
   return (
@@ -408,14 +485,18 @@ const StudentsList = ({ courseId, onSelect }) => {
 
   return (
     <div className='students-admin'>
-      <div>
+      <div className='relative'>
         <Input
           onChange={(e) => setSearchTerm(e.target.value)}
           value={searchTerm}
           placeholder='Search student'
           className='w-60 my-7'
         />
-        <img className='sear-img sear-img-2' src={manImage2} alt='' />
+        <img
+          className='sear-img sear-img-2 top-2 left-3'
+          src={manImage2}
+          alt=''
+        />
       </div>
       <ul>
         {students?.map((student) => (
@@ -426,8 +507,12 @@ const StudentsList = ({ courseId, onSelect }) => {
             } hover:bg-[#E2E2E2]`}
           >
             <Link className='flex w-full' to={`/students/${student.id}`}>
-              <div className='w-9 h-9 object-cover rounded-full'>
-                <img className='w-full h-full' src={student.imageUrl} alt='' />
+              <div className='w-9 h-9 rounded-full overflow-hidden'>
+                <img
+                  className='w-full h-full object-cover'
+                  src={SERVER_API + student?.imageUrl}
+                  alt=''
+                />
               </div>
               <div className='name ml-2'>
                 <span className='span-1'>{student.name}</span>

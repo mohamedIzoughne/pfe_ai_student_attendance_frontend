@@ -11,10 +11,18 @@ import Layout from './components/Layout'
 import Teachers from './pages/admin/Teachers'
 import Courses from './pages/admin/Courses'
 import { default as AdminHome } from './pages/admin/Home'
+import { default as StudentHome } from './pages/student/Home'
+
 import ExamMarks from './pages/teacher/ExamMarks'
+import ImageCutter from './pages/student/ImageCutter'
+// import RegisterUser from './pages/RegisterUser'
 
 const routes = [
-  { path: '/', element: <Home />, roles: ['teacher', 'student'] },
+  { path: '/', element: <Home />, roles: ['teacher'] },
+  { path: '/', element: <StudentHome />, roles: ['student'] },
+  // { path: '/register', element: <RegisterUser />, roles: ['student', 'admin', 'teacher'] },
+  { path: '/', element: <AdminHome />, roles: ['admin'] },
+  { path: '/image-crop', element: <ImageCutter />, roles: ['student'] },
   {
     path: 'mark-attendance',
     element: <AttendanceMarking />,
@@ -31,8 +39,7 @@ const routes = [
     roles: ['admin', 'teacher', 'student'],
   },
   { path: 'exams', element: <Exams />, roles: ['admin', 'teacher'] },
-  { path: 'admin', element: <AdminHome />, roles: ['admin'] },
-  { path: 'teachers', element: <Teachers />, roles: ['admin'] },
+  { path: 'teachers/:teacherId?', element: <Teachers />, roles: ['admin'] },
   { path: 'courses', element: <Courses />, roles: ['admin'] },
   {
     path: 'exams/exam-marks/:examId',
@@ -42,9 +49,13 @@ const routes = [
 ]
 
 const authRoutes = [
-  { path: '/login', element: <Login />, roles: ['guest'] },
-  { path: '/sign-up', element: <Signup />, roles: ['guest'] },
-  { path: '/on-boarding', element: <OnBoarding />, roles: ['guest'] },
+  { path: '/login', element: <Login />, roles: ['admin', 'teacher'] },
+  { path: '/sign-up', element: <Signup />, roles: ['admin', 'teacher'] },
+  {
+    path: '/on-boarding',
+    element: <OnBoarding />,
+    roles: ['admin', 'teacher'],
+  },
 ]
 
 export { routes, authRoutes }

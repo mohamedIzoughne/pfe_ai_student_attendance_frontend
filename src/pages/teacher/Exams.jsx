@@ -20,6 +20,7 @@ import { format } from 'date-fns'
 
 import {
   useCreateExam,
+  useGetCourses,
   useGetExams,
   useGetTeacherCourses,
   useRemoveExam,
@@ -71,7 +72,8 @@ const Exams = () => {
   const { mutate: updateExam } = useUpdateExam()
   const { mutate: removeExam } = useRemoveExam()
   const { mutate: addExam } = useCreateExam() // Add this hook for creating exams
-  const { data: courses } = useGetTeacherCourses(1)
+  // const { data: courses } = useGetTeacherCourses(1)
+  const { data: courses } = useGetCourses(1, 'teacher')
   const { data: subjects } = useGetTeacherSubjectsByCourse(
     1,
     selectedCourse?.id
@@ -240,7 +242,9 @@ const Exams = () => {
                   <DropdownMenuContent>
                     <DropdownMenuLabel>Options</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => navigate(`/exams/exam-marks/${exam.id}`)}>
+                    <DropdownMenuItem
+                      onClick={() => navigate(`/exams/exam-marks/${exam.id}`)}
+                    >
                       View marks
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => handleEditExam(exam)}>

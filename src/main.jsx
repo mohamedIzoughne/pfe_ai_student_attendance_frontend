@@ -8,6 +8,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 const queryClient = new QueryClient()
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
+export const SERVER_API = import.meta.env.VITE_API_URL
 
 if (!PUBLISHABLE_KEY) {
   throw new Error('Missing Publishable Key')

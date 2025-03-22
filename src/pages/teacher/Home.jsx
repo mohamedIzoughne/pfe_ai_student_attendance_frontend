@@ -303,7 +303,7 @@ function Home() {
       <div className='partie-barchart-principal'>
         <div className='partie-barchart'>
           <div className='title-barchart'>
-            <h2>Class Attendance</h2>
+            <h2>Course Attendance</h2>
             <div>
               <ComboboxDemo width='100px' />
             </div>
@@ -560,20 +560,6 @@ const Subjects = () => {
           <h2>Your Subjects</h2>
           <span>{subjects?.length || 0}</span>
         </div>
-        {/* <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button>
-              <IoEllipsisVertical className='treee' />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuLabel>Options</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => setIsAddDialogOpen(true)}>
-              <Plus className='w-4 h-4 mr-1' /> Add new subject
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu> */}
       </div>
 
       {subjects &&
@@ -765,66 +751,6 @@ const Subjects = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* <Dialog open={isQuizDialogOpen} onOpenChange={setIsQuizDialogOpen}>
-        <DialogContent className='max-h-[80vh] overflow-y-auto'>
-          <DialogHeader>
-            <DialogTitle>Add New Quiz</DialogTitle>
-          </DialogHeader>
-          <div>
-            <input
-              type='text'
-              placeholder='Quiz Name'
-              className='w-full p-2 border rounded'
-            />
-            <input
-              type='date'
-              placeholder='Due Date'
-              className='w-full p-2 border rounded mt-2'
-            />
-            <Button className='mt-2' onClick={addQuestion}>
-              Add Question
-            </Button>
-          </div>
-          <div className='max-h-[60vh] overflow-y-auto mt-2'>
-            {questions.map((question, qIndex) => (
-              <div key={qIndex} className='p-2 border rounded mt-2'>
-                <input
-                  type='text'
-                  placeholder='Question'
-                  value={question.text}
-                  onChange={(e) => updateQuestionText(qIndex, e.target.value)}
-                  className='w-full p-2 border rounded'
-                />
-                {question.answers.map((answer, aIndex) => (
-                  <input
-                    key={aIndex}
-                    type='text'
-                    placeholder={aIndex === 0 ? 'Correct answer' : 'Answer'}
-                    value={answer}
-                    onChange={(e) =>
-                      updateAnswer(qIndex, aIndex, e.target.value)
-                    }
-                    className='w-full p-2 border rounded mt-2'
-                  />
-                ))}
-                <Button className='mt-2' onClick={() => addAnswer(qIndex)}>
-                  Add Answer
-                </Button>
-              </div>
-            ))}
-          </div>
-          <DialogFooter>
-            <Button
-              variant='outline'
-              onClick={() => setIsQuizDialogOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button onClick={addQuizHandler}>Add</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog> */}
 
       <AddQuizDialog
         subjectId={selectedSubject?.id}

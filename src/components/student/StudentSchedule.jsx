@@ -1,5 +1,9 @@
 import { IoAddOutline } from 'react-icons/io5'
-import { useCreateSession, useGetTeacherCourses } from '@/api/curriculumApi'
+import {
+  useCreateSession,
+  useGetStudentSessions,
+  useGetTeacherCourses,
+} from '@/api/curriculumApi'
 import { useState } from 'react'
 import {
   Dialog,
@@ -16,7 +20,7 @@ import { useGetTeacherSubjectsByCourse } from '@/api/UsersApi'
 import { useGetTeacherSessions, useDeleteSession } from '@/api/curriculumApi'
 import { useParams } from 'react-router-dom'
 
-const AdminSchedule = () => {
+const StudentSchedule = () => {
   const days = [
     'Monday',
     'Tuesday',
@@ -33,11 +37,11 @@ const AdminSchedule = () => {
     '08:30-12:15',
     '14:30-18:15',
   ]
-  const {teacherId} = useParams()
-  const { data: sessions } = useGetTeacherSessions(teacherId)
+  //   const { teacherId } = useParams()
+  const { data: sessions } = useGetStudentSessions(1)
 
   return (
-    <div className='div-Table'>
+    <div className='div-Table div-Table-student'>
       <div className='just-title'>
         <h3>Schedule</h3>
       </div>
@@ -88,4 +92,4 @@ const AdminSchedule = () => {
   )
 }
 
-export default AdminSchedule
+export default StudentSchedule

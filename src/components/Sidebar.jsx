@@ -18,7 +18,23 @@ const sidebarTermsIcons = {
 
 const SidebarItem = ({ title, path }) => {
   const location = useLocation()
-  const isActive = location.pathname === path
+  const isActive =
+    (location.pathname === '/' && title === 'Home') ||
+    (path !== '/' && location.pathname.startsWith(path))
+
+  // console.log(
+  //   '1:',
+  //   location.pathname,
+  //   title,
+  //   location.pathname === '/' && title === 'Home'
+  // )
+  // console.log(
+  //   '2:',
+  //   location.pathname,
+  //   title,
+  //   path !== '/' && location.pathname.startsWith(path)
+  // )
+
   const Icon = sidebarTermsIcons[title]
 
   return (
@@ -55,7 +71,7 @@ const Sidebar = () => {
   const sidebarItems = useMemo(() => {
     if (userRole === 'admin') {
       return [
-        { title: 'Home', path: '/admin' },
+        { title: 'Home', path: '/' },
         { title: 'Students', path: '/students' },
         { title: 'Teachers', path: '/teachers' },
         { title: 'Courses', path: '/courses' },

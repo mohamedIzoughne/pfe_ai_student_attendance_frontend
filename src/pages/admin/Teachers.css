@@ -6,7 +6,6 @@ body {
 
 .students-admin-principal {
   display: flex;
-  justify-content: space-between;
   position: relative;
   width: 100%;
 }
@@ -25,8 +24,8 @@ body {
 }
 .students-admin-principal .sear-img {
   position: absolute;
-  top: 4.4%;
-  left: 10px;
+  /* top: 4.4%; */
+  /* left: 10px; */
 }
 
 .student-name {

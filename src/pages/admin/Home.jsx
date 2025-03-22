@@ -327,7 +327,6 @@ function Home() {
   const removeExam = useRemoveExam()
   const removeQuiz = useRemoveQuiz()
 
-
   const handleSubmit = async () => {
     if (newRoom.name.trim() === '') return
 
@@ -391,11 +390,11 @@ function Home() {
             setSelectedItem={setSelectedItem}
           />
 
-          <SubjectSection
+          {/* <SubjectSection
             fields={fields}
             setDialogType={setDialogType}
             setSelectedItem={setSelectedItem}
-          />
+          /> */}
         </div>
 
         <AddDialog

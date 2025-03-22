@@ -1,12 +1,7 @@
-import { Label } from '@radix-ui/react-label'
+import React, { createContext, useContext, useState, useRef } from 'react'
+import { Label } from '@/components/ui/label'
 import backgroundImage from '../assets/images/onboarding-side-bg.png'
-import React, { useEffect } from 'react'
-import { useRef, useReducer } from 'react'
-// import ProgressBar from '../components/UI/ProgressBar'
-// import progressBar from '../components/UI/ProgressBar'
-// import {Button} from 'shadcn-ui'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { IoArrowForward } from 'react-icons/io5'
 import { MdOutlineArrowBackIos } from 'react-icons/md'
@@ -29,9 +24,8 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { Check, ChevronsUpDown, Camera, Type } from 'lucide-react'
+import { Check, ChevronsUpDown, Camera } from 'lucide-react'
 import { Card } from '@/components/ui/card'
-
 import { cn } from '@/lib/utils'
 import {
   Command,
@@ -47,65 +41,64 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import ProgressBar from '@/components/UI/ProgressBar'
-import * as z from 'zod'
 import { useForm } from 'react-hook-form'
-// import { zodResolver } from '@hookform/resolvers/zod'
 import { AlertCircle } from 'lucide-react'
 import { Alert, AlertTitle, AlertDescription } from '@/components/UI/alert'
-import { zodResolver } from '@hookform/resolvers/zod'
 import { useCreateSchool, getSchools, useGetCities } from '@/api/curriculumApi'
-import { useCreateUser } from '@/api/UsersApi'
-import { useContext } from 'react'
 import { Context } from '@/store'
-import ImageCropper from './ImageCropper'
+import { ComboboxDemo } from '@/components/UI/ComboboxDemo'
 
-const initialState = {
-  firstName: '',
-  lastName: '',
-  profileImage: null,
-  email: '',
-  phoneNumber: '',
-  gender: '',
-  hometown: '',
-  school: '',
-  city: '',
-  role: 'student',
-  schoolId: undefined,
-}
+// Create a context for the onboarding process
+const OnboardingContext = createContext(null)
 
-const reducer = (state, action) => {
-  switch (action.type) {
-    case 'SET_FORM_DATA':
-      return { ...state, ...action.payload }
-    case 'SET_FIRST_NAME':
-      return { ...state, firstName: action.payload }
-    case 'SET_LAST_NAME':
-      return { ...state, lastName: action.payload }
-    case 'SET_IMAGE':
-      return { ...state, image: action.payload }
-    case 'SET_EMAIL':
-      return { ...state, email: action.payload }
-    case 'SET_PHONE_NUMBER':
-      return { ...state, phoneNumber: action.payload }
-    case 'SET_GENDER':
-      return { ...state, gender: action.payload }
-    case 'SET_HOMETOWN':
-      return { ...state, hometown: action.payload }
-    case 'SET_SCHOOL':
-      return { ...state, school: action.payload }
-    case 'SET_SCHOOL_ID':
-      return { ...state, schoolId: action.payload }
-    case 'SET_CITY':
-      return { ...state, city: action.payload }
-    case 'SET_ROLE':
-      return { ...state, role: action.payload }
-    case 'SET_PROFILE_IMAGE':
-      return { ...state, role: action.profileImage }
-    default:
-      return state
+// Create a provider component
+const OnboardingProvider = ({ children }) => {
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    profileImage: null,
+    email: '',
+    phoneNumber: '',
+    gender: '',
+    hometown: '',
+    school: '',
+    city: '',
+    role: 'student',
+    schoolId: undefined,
+    courseId: '',
+  })
+
+  const updateFormData = (fieldName, value) => {
+    setFormData((prev) => ({ ...prev, [fieldName]: value }))
   }
+
+  const updateMultipleFields = (fieldsObj) => {
+    setFormData((prev) => ({ ...prev, ...fieldsObj }))
+  }
+
+  return (
+    <OnboardingContext.Provider
+      value={{
+        formData,
+        updateFormData,
+        updateMultipleFields,
+      }}
+    >
+      {children}
+    </OnboardingContext.Provider>
+  )
 }
 
+// Custom hook to use the context
+const useOnboarding = () => {
+  const context = useContext(OnboardingContext)
+  if (!context) {
+    throw new Error('useOnboarding must be used within an OnboardingProvider')
+  }
+  return context
+}
+
+// SchoolsComboBox Component
 function SchoolsComboBox({ schools = [], handleSelectSchoolNameChange }) {
   const [open, setOpen] = useState(false)
   const [value, setValue] = useState('')
@@ -150,7 +143,7 @@ function SchoolsComboBox({ schools = [], handleSelectSchoolNameChange }) {
                   {school.name}
                 </CommandItem>
               ))}
-            </CommandGroup>{' '}
+            </CommandGroup>
           </CommandList>
         </Command>
       </PopoverContent>
@@ -158,56 +151,58 @@ function SchoolsComboBox({ schools = [], handleSelectSchoolNameChange }) {
   )
 }
 
+// Box component for radio selections
 const Box = ({ id, isActive, children }) => {
-  console.log(id, isActive)
   return (
     <div
-      className={`flex items-center space-x-2 w-56 pl-3  font-medium border-[1px] border-solid rounded-sm  ${
+      className={`flex items-center space-x-2 w-56 pl-3 font-medium border-[1px] border-solid rounded-sm ${
         isActive
-          ? ' bg-[rgb(72,128,255)] bg-opacity-15 border-[#4880FF]'
-          : ' border-[#F4F4F4] '
+          ? 'bg-[rgb(72,128,255)] bg-opacity-15 border-[#4880FF]'
+          : 'border-[#F4F4F4]'
       }`}
     >
       <RadioGroupItem value={id} id={id} className='text-primary' />
-      <Label className='text-xs  px-3 py-6 cursor-pointer' htmlFor={id}>
+      <Label className='text-xs px-3 py-6 cursor-pointer' htmlFor={id}>
         {children}
       </Label>
     </div>
   )
 }
 
-const RoleScreen = ({ dispatch, role }) => {
+// RoleScreen Component
+const RoleScreen = () => {
+  const { formData, updateFormData } = useOnboarding()
+
   const handleRoleOptionChange = (value) => {
-    dispatch({ type: 'SET_ROLE', payload: value })
+    updateFormData('role', value)
   }
 
   return (
     <section className='pl-9 min-h-[500px]'>
       <div className='mt-11'>
-        <h1 className=' text-[24px] font-bold'>Let’s get started</h1>
+        <h1 className='text-[24px] font-bold'>Let's get started</h1>
         <p className='font-semibold'>
           If you already have an account,{' '}
-          {/* <span className='text-primary'>Login here</span> */}
           <Link to='/login' className='text-primary'>
             Login here
           </Link>
         </p>
       </div>
-      <div className='mt- mt-8'>
+      <div className='mt-8'>
         <RadioGroup
-          className='flex  items-center flex-wrap'
+          className='flex items-center flex-wrap'
           onValueChange={handleRoleOptionChange}
-          defaultValue={role}
+          defaultValue={formData.role}
         >
-          <Box id='student' isActive={role === 'student'}>
+          <Box id='student' isActive={formData.role === 'student'}>
             I&apos;m a student learning, completing assignments, and staying
             organized.
           </Box>
-          <Box id='teacher' isActive={role === 'teacher'}>
+          <Box id='teacher' isActive={formData.role === 'teacher'}>
             I&apos;m a teacher managing classes, tracking progress, and
             accessing resources!
           </Box>
-          <Box id='admin' isActive={role === 'admin'}>
+          <Box id='admin' isActive={formData.role === 'admin'}>
             I&apos;m an admin managing users, overseeing operations, and
             ensuring smooth workflow
           </Box>
@@ -217,18 +212,19 @@ const RoleScreen = ({ dispatch, role }) => {
   )
 }
 
-const SchoolScreen = ({ dispatch, school, isAdmin, handleNextStep }) => {
+// SchoolScreen Component
+const SchoolScreen = ({ handleNextStep }) => {
+  const { formData, updateFormData } = useOnboarding()
   const mutation = useCreateSchool()
   const { data: cities } = useGetCities()
   const [schools, setSchools] = useState([])
   const [selectedCity, setSelectedCity] = useState('')
   const [isOpen, setIsOpen] = useState(false)
   const [newCity, setNewCity] = useState('')
-  const ctx = useContext(Context)
+  const isAdmin = formData.role === 'admin'
 
-  useEffect(() => {
+  React.useEffect(() => {
     const fetchSchools = async () => {
-      console.log('The selected city:', selectedCity)
       try {
         const response = await getSchools(selectedCity)
         setSchools(response)
@@ -243,33 +239,27 @@ const SchoolScreen = ({ dispatch, school, isAdmin, handleNextStep }) => {
   }, [selectedCity, isOpen])
 
   const handleSchoolNameChange = (e) => {
-    console.log(e.target.value)
-    dispatch({ type: 'SET_SCHOOL', payload: e.target.value })
-    ctx.schoolIdHandler(e.target.value)
+    updateFormData('school', e.target.value)
   }
 
   const handleSelectSchoolNameChange = (value) => {
-    console.log('Value', value)
-    dispatch({ type: 'SET_SCHOOL_ID', payload: value })
+    updateFormData('schoolId', value)
   }
 
   const handleCityChange = (value) => {
-    // console.log(value)
-    dispatch({ type: 'SET_CITY', payload: value })
+    updateFormData('city', value)
     setSelectedCity(value)
   }
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    const formData = {
-      name: school,
+    const schoolData = {
+      name: formData.school,
       city: newCity,
     }
-    console.log(formData)
 
-    mutation.mutate(formData, {
+    mutation.mutate(schoolData, {
       onSuccess: () => {
-        console.log('success')
         setIsOpen(false)
         handleNextStep()
       },
@@ -282,7 +272,7 @@ const SchoolScreen = ({ dispatch, school, isAdmin, handleNextStep }) => {
   return (
     <section className='pl-9 max-h-[800px] min-h-[500px]'>
       <div className='mt-11'>
-        <h1 className=' text-[24px] font-bold'>Select Your School</h1>
+        <h1 className='text-[24px] font-bold'>Select Your School</h1>
         <p className='font-semibold'>
           Find and choose your school to personalize your experience
         </p>
@@ -321,7 +311,7 @@ const SchoolScreen = ({ dispatch, school, isAdmin, handleNextStep }) => {
                 </DialogHeader>
                 <form onSubmit={handleSubmit}>
                   <div className='mb-4'>
-                    <Label htmlFor='city' className='block'>
+                    <Label htmlFor='city-name' className='block'>
                       Choose a city
                     </Label>
                     <Input
@@ -339,7 +329,7 @@ const SchoolScreen = ({ dispatch, school, isAdmin, handleNextStep }) => {
                     </Label>
                     <Input
                       id='school-name'
-                      value={school}
+                      value={formData.school}
                       onChange={handleSchoolNameChange}
                       placeholder='Enter school name'
                       required
@@ -362,30 +352,29 @@ const SchoolScreen = ({ dispatch, school, isAdmin, handleNextStep }) => {
           )}
         </div>
       </div>
-      <div></div>
     </section>
   )
 }
 
-const UserProfileScreen = ({ dispatch, state }) => {
+// UserProfileScreen Component
+const UserProfileScreen = () => {
+  const { formData, updateFormData, updateMultipleFields } = useOnboarding()
   const fileInputRef = useRef(null)
   const [showError, setShowError] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const navigate = useNavigate()
-  const isStudent = state.role === 'student'
-  const isAdmin = state.role === 'admin'
-  const isTeacher = state.role === 'teacher'
+  const isStudent = formData.role === 'student'
+  const { roleHandler } = useContext(Context)
 
   const form = useForm({
     defaultValues: {
-      firstName: '',
-      lastName: '',
-      email: '',
-      phone: '',
-      hometown: '',
-      gender: '',
-      profileImage: undefined,
-      course: '',
+      firstName: formData.firstName || '',
+      lastName: formData.lastName || '',
+      email: formData.email || '',
+      phone: formData.phoneNumber || '',
+      hometown: formData.hometown || '',
+      gender: formData.gender || '',
+      courseId: formData.courseId || '',
     },
   })
 
@@ -397,8 +386,7 @@ const UserProfileScreen = ({ dispatch, state }) => {
       form.setValue('profileImage', file)
       const reader = new FileReader()
       reader.onloadend = () => {
-        dispatch({ type: 'SET_IMAGE_PREVIEW', payload: reader.result })
-        dispatch({ type: 'SET_PROFILE_IMAGE', payload: file })
+        updateFormData('profileImage', file)
       }
       reader.readAsDataURL(file)
     }
@@ -406,16 +394,38 @@ const UserProfileScreen = ({ dispatch, state }) => {
 
   const onSubmit = async (data) => {
     try {
-      // dispatch({ type: 'SET_FORM_DATA', payload: { ...data, role: state.role, city: state.city, school: state.school } });
-      console.log(data)
-      navigate('/sign-up', {
-        state: {
-          ...data,
-          role: state.role,
-          city: state.city,
-          schoolId: state.schoolId,
-        },
+      // Update the context with form data
+      updateMultipleFields({
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        phoneNumber: data.phone,
+        hometown: data.hometown,
+        gender: data.gender,
+        courseId: data.courseId,
       })
+
+      roleHandler(formData.role)
+
+      if (formData.role === 'student') {
+        navigate('/image-crop', {
+          state: {
+            ...data,
+            role: formData.role,
+            city: formData.city,
+            schoolId: formData.schoolId,
+          },
+        })
+      } else {
+        navigate('/sign-up', {
+          state: {
+            ...data,
+            role: formData.role,
+            city: formData.city,
+            schoolId: formData.schoolId,
+          },
+        })
+      }
     } catch (error) {
       setErrorMessage(error.message)
       setShowError(true)
@@ -436,9 +446,9 @@ const UserProfileScreen = ({ dispatch, state }) => {
                 accept='image/*'
               />
               <div className='w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden'>
-                {state.profileImage ? (
+                {formData.profileImage ? (
                   <img
-                    src={state.profileImage}
+                    src={URL.createObjectURL(formData.profileImage)}
                     alt='Profile'
                     className='w-full h-full object-cover'
                   />
@@ -465,7 +475,9 @@ const UserProfileScreen = ({ dispatch, state }) => {
                 <Input
                   className='h-14'
                   id={field}
-                  placeholder={`Enter your ${field}`}
+                  placeholder={`Enter your ${field
+                    .replace(/([A-Z])/g, ' $1')
+                    .trim()}`}
                   {...form.register(field)}
                 />
               </div>
@@ -502,14 +514,26 @@ const UserProfileScreen = ({ dispatch, state }) => {
                       <SelectValue placeholder='Select' />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value='male'>Male</SelectItem>
-                      <SelectItem value='female'>Female</SelectItem>
+                      <SelectItem value='Male'>Male</SelectItem>
+                      <SelectItem value='Female'>Female</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className='space-y-2'>
                   <Label htmlFor='course'>Course</Label>
-                  <Select
+                  <ComboboxDemo
+                    placeholder='Select course'
+                    onSelect={(selected) =>
+                      form.setValue('courseId', selected.id)
+                    }
+                    options={[
+                      {
+                        name: 'GI',
+                        id: 1,
+                      },
+                    ]}
+                  />
+                  {/* <Select
                     onValueChange={(value) => form.setValue('course', value)}
                   >
                     <SelectTrigger className='h-14 w-full'>
@@ -520,7 +544,7 @@ const UserProfileScreen = ({ dispatch, state }) => {
                       <SelectItem value='class-11'>Class 11</SelectItem>
                       <SelectItem value='class-12'>Class 12</SelectItem>
                     </SelectContent>
-                  </Select>
+                  </Select> */}
                 </div>
               </>
             )}
@@ -548,91 +572,76 @@ const UserProfileScreen = ({ dispatch, state }) => {
   )
 }
 
+// Main OnBoarding Component
 const OnBoarding = () => {
   const [step, setStep] = useState(1)
-  const [state, dispatch] = useReducer(reducer, initialState)
 
   const handleNextStep = () => {
-    setStep((step) => {
-      if (step < 3) {
-        return step + 1
-      } else {
-        return step
-      }
-    })
+    setStep((prevStep) => (prevStep < 3 ? prevStep + 1 : prevStep))
   }
 
   const handlePreviousStep = () => {
-    setStep((step) => {
-      if (step > 1) {
-        return step - 1
-      } else {
-        return step
-      }
-    })
+    setStep((prevStep) => (prevStep > 1 ? prevStep - 1 : prevStep))
   }
 
   return (
-    <div className='flex h-dvh'>
-      <section
-        className={`min-w-[300px] max-w-[600px] w-[33%] hidden sm:block h-full bg-cover bg-center bg bg-no-repeat text-white pr-10 sm:pr-24 pl-4 pt-10`}
-        style={{
-          backgroundImage: `url(${backgroundImage})`,
-        }}
-      >
-        <h3 className='text-2xl text-white font-medium'>EduVisionAI</h3>
-        <h1 className='text-5xl font-bold text-white mt-28'>
-          Start your journey with us
-        </h1>
-        <p className='text-white mt-5'>
-          Start your journey with us and explore new opportunities in technology
-          and innovation. Whether you&apos;re learning the basics or working on
-          advanced projects, we provide the tools and guidance to help you grow.
-          Join us today and start building something amazing!
-        </p>
-      </section>
-      <div className='w-full flex flex-col'>
-        {/* <UserProfileScreen step={step} /> */}
-        <ProgressBar className='mt-20 mx-auto' step={step} />
+    <OnboardingProvider>
+      <div className='flex h-dvh'>
+        <section
+          className='min-w-[300px] max-w-[600px] w-[33%] hidden sm:block h-full bg-cover bg-center bg-no-repeat text-white pr-10 sm:pr-24 pl-4 pt-10'
+          style={{
+            backgroundImage: `url(${backgroundImage})`,
+          }}
+        >
+          <h3 className='text-2xl text-white font-medium'>EduVisionAI</h3>
+          <h1 className='text-5xl font-bold text-white mt-28'>
+            Start your journey with us
+          </h1>
+          <p className='text-white mt-5'>
+            Start your journey with us and explore new opportunities in
+            technology and innovation. Whether you&apos;re learning the basics
+            or working on advanced projects, we provide the tools and guidance
+            to help you grow. Join us today and start building something
+            amazing!
+          </p>
+        </section>
+        <div className='w-full flex flex-col'>
+          <ProgressBar className='mt-20 mx-auto' step={step} />
 
-        <div className='w-full min-h-[600px]'>
-          {step === 1 ? (
-            <RoleScreen dispatch={dispatch} role={state.role} />
-          ) : step === 2 ? (
-            <SchoolScreen
-              isAdmin={state.role === 'admin'}
-              dispatch={dispatch}
-              school={state.school}
-              handleNextStep={handleNextStep}
-            />
-          ) : (
-            <UserProfileScreen dispatch={dispatch} state={state} />
-          )}
-        </div>
+          <div className='w-full min-h-[600px]'>
+            {step === 1 ? (
+              <RoleScreen />
+            ) : step === 2 ? (
+              <SchoolScreen handleNextStep={handleNextStep} />
+            ) : (
+              <UserProfileScreen />
+            )}
+          </div>
 
-        <div className='ml-9 mt-6 flex items-center'>
-          <Button
-            disabled={step === 1}
-            onClick={handlePreviousStep}
-            variant='outline'
-          >
-            <MdOutlineArrowBackIos
-              className='text-xs fill-[#606060]' // fill-current to inherit from parent
-              size={20}
-            />
-            Previous
-          </Button>
-          <Button
-            disabled={step === 3}
-            onClick={handleNextStep}
-            className='ml-2 shadow-none'
-          >
-            Next
-            <IoArrowForward className='fill-white stroke-white' />
-          </Button>
+          <div className='ml-9 mt-6 flex items-center'>
+            <Button
+              disabled={step === 1}
+              onClick={handlePreviousStep}
+              variant='outline'
+            >
+              <MdOutlineArrowBackIos
+                className='text-xs fill-[#606060]'
+                size={20}
+              />
+              Previous
+            </Button>
+            <Button
+              disabled={step === 3}
+              onClick={handleNextStep}
+              className='ml-2 shadow-none'
+            >
+              Next
+              <IoArrowForward className='fill-white stroke-white' />
+            </Button>
+          </div>
         </div>
       </div>
-    </div>
+    </OnboardingProvider>
   )
 }
 

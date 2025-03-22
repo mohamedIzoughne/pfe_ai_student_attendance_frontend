@@ -29,16 +29,43 @@ export const getSchools = async (city) => {
   return data.schools
 }
 
-export const useGetCourses = (schoolId) => {
+export const useGetCourses = (id, role) => {
   return useQuery({
-    queryKey: ['courses', schoolId],
+    queryKey: ['courses', id, role],
     queryFn: async () => {
       const { data } = await apiClient.get(
-        `/curriculum/courses?schoolId=${schoolId}`
+        role === 'admin'
+          ? `/curriculum/courses?schoolId=${id}`
+          : `/curriculum/teachers/${id}/courses`
       )
       return data.courses
     },
-    enabled: !!schoolId,
+    enabled: !!id,
+  })
+}
+// export const useGetCourses = (schoolId) => {
+//   return useQuery({
+//     queryKey: ['courses', schoolId],
+//     queryFn: async () => {
+//       const { data } = await apiClient.get(
+//         `/curriculum/courses?schoolId=${schoolId}`
+//       )
+//       return data.courses
+//     },
+//     enabled: !!schoolId,
+//   })
+// }
+
+export const useGetTeacherCourses = (teacherId) => {
+  return useQuery({
+    queryKey: ['teacherCourses', teacherId],
+    queryFn: async () => {
+      const { data } = await apiClient.get(
+        `/curriculum/teachers/${teacherId}/courses`
+      )
+      return data.courses
+    },
+    enabled: !!teacherId, // Only run when teacherId is available
   })
 }
 
@@ -268,19 +295,6 @@ export const useRemoveField = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries(['fields'])
     },
-  })
-}
-
-export const useGetTeacherCourses = (teacherId) => {
-  return useQuery({
-    queryKey: ['teacherCourses', teacherId],
-    queryFn: async () => {
-      const { data } = await apiClient.get(
-        `/curriculum/teachers/${teacherId}/courses`
-      )
-      return data.courses
-    },
-    enabled: !!teacherId, // Only run when teacherId is available
   })
 }
 
@@ -521,8 +535,50 @@ export const useGetTeacherSessions = (teacherId) => {
   return useQuery({
     queryKey: ['teacherSessions', teacherId],
     queryFn: async () => {
-      const { data } = await apiClient.get(`/curriculum/teacher-sessions/${teacherId}`)
+      const { data } = await apiClient.get(
+        `/curriculum/teacher-sessions/${teacherId}`
+      )
       return data.sessions
-    }
+    },
+    enabled: Boolean(teacherId),
+  })
+}
+
+export const useGetStudentSessions = (studentId) => {
+  return useQuery({
+    queryKey: ['studentSessions', studentId],
+    queryFn: async () => {
+      const { data } = await apiClient.get(
+        `/curriculum/student-sessions/${studentId}`
+      )
+      return data.sessions
+    },
+    enabled: Boolean(studentId),
+  })
+}
+
+export const useGetStudentSubjects = (studentId) => {
+  return useQuery({
+    queryKey: ['studentSubjects', studentId],
+    queryFn: async () => {
+      const { data } = await apiClient.get(
+        `/curriculum/student-subjects/${studentId}`
+      )
+      return data.subjects
+    },
+    enabled: Boolean(studentId),
+  })
+}
+
+export const useGetStudentSessionsMinimal = (studentId) => {
+  return useQuery({
+    queryKey: ['studentSessionsByCourse', studentId],
+    queryFn: async () => {
+      const { data } = await apiClient.get(
+        `/curriculum/student-minimal-sessions/${studentId}`
+      )
+      return data.sessions
+    },
+    enabled: Boolean(studentId),
   })
 }

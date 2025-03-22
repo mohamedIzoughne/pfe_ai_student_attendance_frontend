@@ -1,5 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { apiClient } from '@/api/apiClient'
+import { useQueryClient } from '@tanstack/react-query'
 
 export const useCreateUser = () => {
   return useMutation({
@@ -8,22 +9,22 @@ export const useCreateUser = () => {
 
       // Add all user data to formData
       Object.keys(userData).forEach((key) => {
-        if (key === 'image' && userData[key]) {
-          formData.append('image', userData[key])
+        // formData.append(key, userData[key])
+        if (
+          (key === 'imageProfile' || key === 'croppedImage') &&
+          userData[key]
+        ) {
+          formData.append(key, userData[key])
         } else if (userData[key] !== undefined) {
           formData.append(key, userData[key])
         }
       })
 
-      const { data } = await apiClient.post(
-        '/curriculum/create-user',
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        }
-      )
+      const { data } = await apiClient.post('/user/create-user', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      })
       return data
     },
   })
@@ -164,20 +165,21 @@ export const useGetStudentComplaints = (studentId) => {
   return useQuery({
     queryKey: ['studentComplaints', studentId],
     queryFn: async () => {
-      const { data } = await apiClient.get(`/user/students/${studentId}/complaints`)
+      const { data } = await apiClient.get(
+        `/user/students/${studentId}/complaints`
+      )
       return data
     },
     enabled: Boolean(studentId),
   })
 }
 
-
-export const useSearchTeachers = (nameQuery) => {
+export const useSearchTeachers = (nameQuery, schoolId) => {
   return useQuery({
     queryKey: ['searchTeachers', nameQuery],
     queryFn: async () => {
       const { data } = await apiClient.get(
-        `/user/teachers/search?name=${nameQuery}`
+        `/user/teachers/search?name=${nameQuery}&schoolId=${schoolId}`
       )
       return data
     },
@@ -190,6 +192,34 @@ export const useGetTeacherDetails = (teacherId) => {
     queryFn: async () => {
       const { data } = await apiClient.get(`/user/teachers/${teacherId}`)
       return data
+    },
+    enabled: Boolean(teacherId),
+  })
+}
+
+export const useEditStudent = (studentId) => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (data) => {
+      const response = await apiClient.put(`/user/students/${studentId}`, data)
+      return response.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['studentDetails'])
+    },
+    enabled: Boolean(studentId),
+  })
+}
+
+export const useEditTeacher = (teacherId) => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (data) => {
+      const response = await apiClient.put(`/user/teachers/${teacherId}`, data)
+      return response.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['teacherDetails'])
     },
     enabled: Boolean(teacherId),
   })

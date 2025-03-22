@@ -87,7 +87,7 @@ const StudentsPieChartComponent = ({
 }) => {
   const [activeIndex, setActiveIndex] = useState(0)
   const [selectedCourse, setSelectedCourse] = useState({})
-  const { data: courses } = useGetCourses(1)
+  const { data: courses } = useGetCourses(1, 'teacher')
   const { data: genderData } = useGetTeacherGenderData(1, selectedCourse?.id)
 
   const onPieEnter = useCallback((_, index) => {

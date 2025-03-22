@@ -40,7 +40,8 @@ import {
 import { useEffect } from 'react'
 
 const Complaints = () => {
-  const { data: courses } = useGetTeacherCourses(1)
+  // const { data: courses } = useGetTeacherCourses(1)
+  const { data: courses } = useGetCourses(1, 'teacher')
   const [selectedCourse, setSelectedCourse] = useState({})
   const [selectedSession, setSelectedSession] = useState({})
   const { data: sessions } = useGetSessions(selectedCourse?.id)

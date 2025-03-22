@@ -14,45 +14,7 @@ import { Button } from '../UI/button'
 import { ComboboxDemo } from '../UI/ComboboxDemo'
 import { useGetTeacherSubjectsByCourse } from '@/api/UsersApi'
 import { useGetTeacherSessions, useDeleteSession } from '@/api/curriculumApi'
-
-const scheduleData = [
-  {
-    day: 'Monday',
-    time: '08:30 - 10:15',
-    courseName: 'Classe GI 1 G3',
-    sessionName: 'Java Lecture',
-    subjectName: 'Java',
-    color: '#FDFCE8', // Light yellow
-  },
-  {
-    day: 'Tuesday',
-    time: '10:30 - 12:15',
-    courseName: 'Classe GI 1 G3',
-    sessionName: 'Java Lab',
-    subjectName: 'Java',
-    color: '#E8FDFA', // Light cyan
-  },
-  {
-    day: 'Thursday',
-    time: '10:30 - 12:15',
-    courseName: 'Classe GI 1 G3',
-    sessionName: 'Java Workshop',
-    subjectName: 'Java',
-    color: '#FDE8FD', // Light pink
-  },
-  {
-    day: 'Friday',
-    time: '16:30 - 18:15',
-    courseName: 'Classe GI 1 G3',
-    sessionName: 'Java Project',
-    subjectName: 'Java',
-    color: '#E8E8FD', // Light blue
-  },
-]
-
-const TeachersList = () => {
-  
-}
+import { useGetCourses } from '@/api/curriculumApi'
 
 const TeacherSchedule = () => {
   const days = [
@@ -87,7 +49,8 @@ const TeacherSchedule = () => {
   const createSession = useCreateSession()
   const deleteSession = useDeleteSession()
   const { data: sessions } = useGetTeacherSessions(1)
-  const { data: courses } = useGetTeacherCourses(1)
+  // const { data: courses } = useGetTeacherCourses(1)
+  const { data: courses } = useGetCourses(1, 'teacher')
   const { data: subjects } = useGetTeacherSubjectsByCourse(
     1,
     sessionFormData?.selectedCourse?.id

@@ -54,7 +54,7 @@ const Options = ({ width = '200px', setStudents, newStudents = [] }) => {
   const [selectedSession, setSelectedSession] = useState({})
   const [isCoursesOpen, setIsCoursesOpen] = useState(false)
   const [selectedCourse, setSelectedCourse] = useState({})
-  const { data: courses = [] } = useGetCourses(1)
+  const { data: courses = [] } = useGetCourses(1, 'teacher')
   const { data: sessions = [] } = useGetSessions(selectedCourse.id)
   const { data: students } = useStudentsAttendances(
     selectedCourse.id,

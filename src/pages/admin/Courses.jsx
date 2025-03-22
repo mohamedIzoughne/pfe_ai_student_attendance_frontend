@@ -29,6 +29,7 @@ import {
   useCreateCourse,
   useUpdateCourse,
   useDeleteCourse,
+  useGetFields,
 } from '@/api/curriculumApi'
 import {
   Select,
@@ -37,6 +38,7 @@ import {
   SelectContent,
   SelectValue,
 } from '@/components/UI/select'
+import { ComboboxDemo } from '@/components/UI/ComboboxDemo'
 
 const Courses = () => {
   const { data: courses } = useGetCoursesDetails(1)
@@ -44,21 +46,44 @@ const Courses = () => {
   const [editingCourse, setEditingCourse] = useState(null)
   const [open, setOpen] = useState(false)
   const [addOpen, setAddOpen] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filteredCourses, setFilteredCourses] = useState([])
   const [newCourse, setNewCourse] = useState({
     name: '',
     grade: '',
     capacity: '',
     supervisorId: '',
     fieldId: 1,
+    description: '',
   })
+  const { data: fields } = useGetFields(1)
 
   const createCourseMutation = useCreateCourse()
   const updateCourseMutation = useUpdateCourse()
   const deleteCourseMutation = useDeleteCourse()
 
+  React.useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      const filtered =
+        courses?.filter((course) =>
+          course?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+        ) || []
+      setFilteredCourses(filtered)
+    }, 300)
+
+    return () => clearTimeout(timeoutId)
+  }, [searchTerm, courses])
+
   const handleAdd = () => {
     createCourseMutation.mutate(newCourse)
-    setNewCourse({ name: '', grade: '', capacity: '', supervisorId: '', fieldId: 1 })
+    setNewCourse({
+      name: '',
+      grade: '',
+      capacity: '',
+      supervisorId: '',
+      fieldId: 1,
+      description: '',
+    })
     setAddOpen(false)
   }
 
@@ -69,7 +94,8 @@ const Courses = () => {
         name: editingCourse.name,
         grade: editingCourse.grade,
         capacity: editingCourse.capacity,
-        supervisorId: editingCourse.supervisorId,
+        supervisorId: editingCourse?.supervisor?.id,
+        description: editingCourse.description,
         fieldId: editingCourse.fieldId || 1,
       },
     })
@@ -94,7 +120,11 @@ const Courses = () => {
 
       <div className='div-center items-center'>
         <div>
-          <Input placeholder='Search Student name' />
+          <Input
+            placeholder='Search by course name'
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
           <img src={manImage2} alt='' />
         </div>
 
@@ -109,13 +139,25 @@ const Courses = () => {
               </DialogHeader>
               <div className='grid gap-4 py-4'>
                 <div className='grid grid-cols-4 items-center gap-4'>
-                  <Label>Class Name</Label>
+                  <Label>Course Name</Label>
                   <Input
                     value={newCourse.name}
                     onChange={(e) =>
                       setNewCourse({ ...newCourse, name: e.target.value })
                     }
                     className='col-span-3'
+                  />
+                </div>
+                <div className='grid grid-cols-4 items-center gap-4'>
+                  <Label>Field</Label>
+                  <ComboboxDemo
+                    options={fields}
+                    onSelect={(selected) => {
+                      setNewCourse((newCourse) => ({
+                        ...newCourse,
+                        fieldId: selected?.id,
+                      }))
+                    }}
                   />
                 </div>
                 <div className='grid grid-cols-4 items-center gap-4'>
@@ -136,6 +178,19 @@ const Courses = () => {
                       setNewCourse({ ...newCourse, capacity: e.target.value })
                     }
                     className='col-span-3'
+                  />
+                </div>
+                <div className='grid grid-cols-4 items-center gap-4'>
+                  <Label>Description</Label>
+                  <textarea
+                    value={newCourse.description}
+                    onChange={(e) =>
+                      setNewCourse({
+                        ...newCourse,
+                        description: e.target.value,
+                      })
+                    }
+                    className='col-span-3 min-h-[100px] p-2 border rounded-md'
                   />
                 </div>
                 <div className='grid grid-cols-4 items-center gap-4'>
@@ -169,13 +224,13 @@ const Courses = () => {
 
       <table className='table-admin'>
         <tr>
-          <th className='rounded-tl-xl'>Class name</th>
+          <th className='rounded-tl-xl'>Course name</th>
           <th>Grade</th>
           <th>Capacity</th>
           <th>Supervisor</th>
           <th className='rounded-tr-xl'>Actions</th>
         </tr>
-        {courses?.map((course, index) => (
+        {(searchTerm ? filteredCourses : courses)?.map((course, index) => (
           <tr
             key={course.id}
             className={index === courses.length - 1 ? 'last-row' : ''}
@@ -183,7 +238,7 @@ const Courses = () => {
             <td className='Classs'>{course.name}</td>
             <td className='Gradee'>{course.grade}</td>
             <td className='Capa'>{course.capacity}</td>
-            <td className='superv'>{course.supervisor}</td>
+            <td className='superv'>{course?.supervisor?.name}</td>
             <td>
               <div className='icons-admin flex justify-center align-middle'>
                 <Dialog open={open} onOpenChange={setOpen}>
@@ -202,7 +257,7 @@ const Courses = () => {
                     </DialogHeader>
                     <div className='grid gap-4 py-4'>
                       <div className='grid grid-cols-4 items-center gap-4'>
-                        <Label>Class Name</Label>
+                        <Label>Course Name</Label>
                         <Input
                           value={editingCourse?.name || ''}
                           onChange={(e) =>
@@ -241,13 +296,26 @@ const Courses = () => {
                         />
                       </div>
                       <div className='grid grid-cols-4 items-center gap-4'>
+                        <Label>Description</Label>
+                        <textarea
+                          value={editingCourse?.description || ''}
+                          onChange={(e) =>
+                            setEditingCourse({
+                              ...editingCourse,
+                              description: e.target.value,
+                            })
+                          }
+                          className='col-span-3 min-h-[100px] p-2 border rounded-md'
+                        />
+                      </div>
+                      <div className='grid grid-cols-4 items-center gap-4'>
                         <Label>Supervisor</Label>
                         <Select
-                          value={editingCourse?.supervisorId || ''}
+                          value={editingCourse?.supervisor?.id || ''}
                           onValueChange={(value) =>
                             setEditingCourse({
                               ...editingCourse,
-                              supervisorId: value,
+                              supervisor: { id: value },
                             })
                           }
                         >
@@ -302,4 +370,5 @@ const Courses = () => {
     </>
   )
 }
+
 export default Courses

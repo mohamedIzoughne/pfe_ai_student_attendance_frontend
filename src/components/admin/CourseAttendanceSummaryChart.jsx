@@ -20,7 +20,7 @@ export default function CourseAttendanceSummaryChart() {
   return (
     <div className='partie-barchart'>
       <div className='title-barchart'>
-        <h2>Class Attendance Summary</h2>
+        <h2>Course Attendance Summary</h2>
         <div>
           <ComboboxDemo
             options={[]}

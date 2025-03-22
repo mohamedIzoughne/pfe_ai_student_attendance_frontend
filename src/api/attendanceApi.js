@@ -187,3 +187,65 @@ export const useGetStudentAttendanceRate = (studentId, subjectId) => {
     enabled: !!studentId,
   })
 }
+
+export const useGetStudentComplaints = (studentId) => {
+  return useQuery({
+    queryKey: ['studentComplaints', studentId],
+    queryFn: async () => {
+      const { data } = await apiClient.get(
+        `/attendance/student-complaints/${studentId}`
+      )
+      return data
+    },
+    enabled: !!studentId,
+  })
+}
+
+export const useDeleteComplaint = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (complaintId) => {
+      const { data } = await apiClient.delete(
+        `/attendance/student-complaints/${complaintId}`
+      )
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['studentComplaints'])
+    },
+  })
+}
+
+export const useUpdateComplaint = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ complaintId, updateData }) => {
+      const { data } = await apiClient.put(
+        `/attendance/student-complaints/${complaintId}`,
+        updateData
+      )
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['studentComplaints'])
+    },
+  })
+}
+
+export const useAddComplaint = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (complaintData) => {
+      const { data } = await apiClient.post(
+        '/attendance/complaints',
+        complaintData
+      )
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['studentComplaints'])
+    },
+  })
+}
+
+

@@ -80,10 +80,10 @@ const PieChartComponent = ({
   innerRadius = 60,
   outerRadius = 80,
   colors = ['#FF9066', '#8280FF'],
-  data = []
+  data = [],
 }) => {
   const [activeIndex, setActiveIndex] = useState(0)
-
+  console.log('DATATATA', data)
   const onPieEnter = useCallback((_, index) => {
     setActiveIndex(index)
   }, [])
