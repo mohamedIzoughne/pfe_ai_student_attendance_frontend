@@ -36,6 +36,7 @@ import {
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { useUpdateMarkNotes } from '@/api/curriculumApi'
+import { SERVER_API } from '@/main'
 
 const ExamMarks = () => {
   const fileInputRef = useRef(null)
@@ -51,6 +52,7 @@ const ExamMarks = () => {
   const [open, setOpen] = useState(false)
   const [notesDialogOpen, setNotesDialogOpen] = useState(false)
   const [selectedStudent, setSelectedStudent] = useState(null)
+  const [searchQuery, setSearchQuery] = useState("")
 
   const handleButtonClick = () => {
     exportMarks()
@@ -113,7 +115,11 @@ const ExamMarks = () => {
 
       <div className='div-center'>
         <div>
-          <Input placeholder='Search Student name or id' />
+          <Input 
+            placeholder='Search Student name' 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
           <img src={manImage2} alt='' />
         </div>
 
@@ -123,8 +129,8 @@ const ExamMarks = () => {
               options={[
                 { id: 1, name: 'ID' },
                 { id: 2, name: 'Mark' },
-                { id: 2, name: 'ID Desc' },
-                { id: 2, name: 'Mark Desc' },
+                { id: 3, name: 'ID Desc' },
+                { id: 4, name: 'Mark Desc' },
               ]}
               onSelect={setSortBy}
               placeholder='Sort by'
@@ -235,18 +241,24 @@ const ExamMarks = () => {
         </thead>
         <tbody>
           {sortedMarks()
-            .filter((mark) =>
-              !studentStatus
+            .filter((mark) => {
+              const nameMatch = mark.studentName.toLowerCase().includes(searchQuery.toLowerCase())
+              const statusMatch = !studentStatus?.id
                 ? true
                 : studentStatus.id === 1
                 ? mark.mark >= 12
                 : mark.mark < 12
-            )
+              return nameMatch && statusMatch
+            })
             .map((mark) => (
               <tr key={mark.studentId}>
                 <td>
                   <div>
-                    <img src={mark.studentImage || manImage3} alt='' />
+                    <img
+                      className='object-cover w-full h-full'
+                      src={SERVER_API + mark?.studentImage}
+                      alt=''
+                    />
                   </div>
                 </td>
                 <td className='Name-mark'>{mark.studentName}</td>

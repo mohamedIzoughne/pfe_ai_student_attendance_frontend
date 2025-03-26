@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import {
   BarChart,
   Bar,
@@ -13,23 +13,57 @@ import {
 import { useGetCoursesAttendanceSummary } from '@/api/attendanceApi'
 
 import { ComboboxDemo } from '../UI/ComboboxDemo'
-import { useGetCourses } from '@/api/curriculumApi'
+// import { useGetCourses } from '@/api/curriculumApi'
+import { useEffect, useState } from 'react'
+import { generateWeeks } from '@/lib/utils'
+import { Context } from '@/store'
 
 export default function CourseAttendanceSummaryChart() {
-  const { data: coursesAttendanceSummary } = useGetCoursesAttendanceSummary()
+  const { userConfiguration } = useContext(Context)
+  const [selectedWeek, setSelectedWeek] = useState({})
+  const isTeacher = userConfiguration.role === 'teacher'
+  const { data: coursesAttendanceSummary } = useGetCoursesAttendanceSummary(
+    selectedWeek?.id,
+    isTeacher ? 1 : 0
+  )
+
+  const [weekOptions, setWeekOptions] = useState([])
+
+  useEffect(() => {
+    setWeekOptions(generateWeeks())
+  }, [])
+
+  const calculateChartWidth = () => {
+    if (!coursesAttendanceSummary?.length) return '361px'
+    const minWidth = 361
+    const widthPerColumn = 120
+    const calculatedWidth = Math.max(
+      minWidth,
+      coursesAttendanceSummary.length * widthPerColumn
+    )
+    return `${calculatedWidth}px`
+  }
+
   return (
     <div className='partie-barchart'>
       <div className='title-barchart'>
-        <h2>Course Attendance Summary</h2>
+        <h2>Attendance Summary</h2>
         <div>
           <ComboboxDemo
-            options={[]}
+            onSelect={setSelectedWeek}
+            options={weekOptions}
             placeholder='This week'
             width='130px'
           />
         </div>
       </div>
-      <div style={{ width: '110%', height: '400px' }}>
+      <div
+        style={{
+          width: calculateChartWidth(),
+          height: '400px',
+          overflowX: 'auto',
+        }}
+      >
         <ResponsiveContainer width='100%' height={300}>
           <BarChart
             data={coursesAttendanceSummary}

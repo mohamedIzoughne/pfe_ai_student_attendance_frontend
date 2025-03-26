@@ -5,6 +5,7 @@ import Layout from './components/Layout'
 import { Context } from './store'
 import StudentPage from './pages/student/Home'
 import ImageCutterPage from './pages/student/ImageCutter'
+import { Toaster } from 'sonner'
 
 function App() {
   const { userConfiguration } = useContext(Context)
@@ -12,6 +13,10 @@ function App() {
 
   return (
     <Router>
+      <Toaster
+        position='top-right'
+        richColors
+      />
       <Routes>
         {authRoutes.map(({ path, element }) => (
           <Route key={path} path={path} element={element} />
@@ -21,13 +26,13 @@ function App() {
         <Route path='/image-cut' element={<ImageCutterPage />} /> */}
 
         {/* Protected routes based on role */}
-        <Route path='/' element={<Layout />}>
+        {/* <Route path='/' element={<Layout />}>
           {routes
             .filter((route) => route.roles.includes(userRole))
             .map(({ path, element }) => (
               <Route key={path} path={path} element={element} />
             ))}
-        </Route>
+        </Route> */}
       </Routes>
     </Router>
   )

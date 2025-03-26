@@ -1,3 +1,4 @@
+import { toast } from 'sonner'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from '@/api/apiClient'
 
@@ -10,6 +11,12 @@ export const useCreateSchool = () => {
         schoolData
       )
       return data
+    },
+    onSuccess: () => {
+      toast.success('School created successfully')
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to create school')
     },
   })
 }
@@ -43,18 +50,6 @@ export const useGetCourses = (id, role) => {
     enabled: !!id,
   })
 }
-// export const useGetCourses = (schoolId) => {
-//   return useQuery({
-//     queryKey: ['courses', schoolId],
-//     queryFn: async () => {
-//       const { data } = await apiClient.get(
-//         `/curriculum/courses?schoolId=${schoolId}`
-//       )
-//       return data.courses
-//     },
-//     enabled: !!schoolId,
-//   })
-// }
 
 export const useGetTeacherCourses = (teacherId) => {
   return useQuery({
@@ -65,7 +60,7 @@ export const useGetTeacherCourses = (teacherId) => {
       )
       return data.courses
     },
-    enabled: !!teacherId, // Only run when teacherId is available
+    enabled: !!teacherId,
   })
 }
 
@@ -105,9 +100,13 @@ export const useUpdateCourse = () => {
       )
       return data
     },
-    onSuccess: (_, variables) => {
+    onSuccess: () => {
       queryClient.invalidateQueries(['courses'])
       queryClient.invalidateQueries(['courses-details'])
+      toast.success('Course updated successfully')
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to update course')
     },
   })
 }
@@ -122,6 +121,10 @@ export const useDeleteCourse = () => {
     onSuccess: () => {
       queryClient.invalidateQueries(['courses'])
       queryClient.invalidateQueries(['courses-details'])
+      toast.success('Course deleted successfully')
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to delete course')
     },
   })
 }
@@ -133,9 +136,13 @@ export const useCreateCourse = () => {
       const { data } = await apiClient.post('/curriculum/courses', courseData)
       return data
     },
-    onSuccess: (_, variables) => {
+    onSuccess: () => {
       queryClient.invalidateQueries(['courses'])
       queryClient.invalidateQueries(['courses-details'])
+      toast.success('Course created successfully')
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to create course')
     },
   })
 }
@@ -155,9 +162,8 @@ export const useGetSessions = (courseId) => {
 
 export const useGetExams = (teacherId, subjectId, examDate, courseId) => {
   return useQuery({
-    queryKey: ['exams', teacherId, subjectId, examDate, courseId], // Unique query key
+    queryKey: ['exams', teacherId, subjectId, examDate, courseId],
     queryFn: async () => {
-      // Build the URL with optional query params
       let url = `/curriculum/exams/${teacherId}`
       const params = new URLSearchParams()
 
@@ -172,7 +178,7 @@ export const useGetExams = (teacherId, subjectId, examDate, courseId) => {
       const { data } = await apiClient.get(url)
       return data
     },
-    enabled: !!teacherId, // Only fetch if teacherId exists
+    enabled: !!teacherId,
   })
 }
 
@@ -184,8 +190,12 @@ export const useRemoveExam = () => {
       const { data } = await apiClient.delete(`/curriculum/exams/${examId}`)
       return data
     },
-    onSuccess: (_, variables) => {
+    onSuccess: () => {
       queryClient.invalidateQueries(['exams'])
+      toast.success('Exam removed successfully')
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to remove exam')
     },
   })
 }
@@ -203,6 +213,10 @@ export const useUpdateExam = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['exams'])
+      toast.success('Exam updated successfully')
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to update exam')
     },
   })
 }
@@ -220,6 +234,10 @@ export const useCreateExam = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['exams'])
+      toast.success('Exam created successfully')
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to create exam')
     },
   })
 }
@@ -244,6 +262,10 @@ export const useCreateRoom = () => {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries(['rooms', variables.schoolId])
+      toast.success('Room created successfully')
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to create room')
     },
   })
 }
@@ -256,11 +278,16 @@ export const useRemoveRoom = () => {
       const { data } = await apiClient.delete(`/curriculum/rooms/${roomId}`)
       return data
     },
-    onSuccess: (_, variables) => {
+    onSuccess: () => {
       queryClient.invalidateQueries(['rooms'])
+      toast.success('Room removed successfully')
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to remove room')
     },
   })
 }
+
 export const useAddField = () => {
   const queryClient = useQueryClient()
   return useMutation({
@@ -268,8 +295,12 @@ export const useAddField = () => {
       const { data } = await apiClient.post('/curriculum/fields', fieldData)
       return data
     },
-    onSuccess: (_, variables) => {
+    onSuccess: () => {
       queryClient.invalidateQueries(['fields'])
+      toast.success('Field added successfully')
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to add field')
     },
   })
 }
@@ -281,7 +312,7 @@ export const useGetFields = (schoolId) => {
       const { data } = await apiClient.get(`/curriculum/fields/${schoolId}`)
       return data
     },
-    enabled: !!schoolId, // Only run when schoolId is available
+    enabled: !!schoolId,
   })
 }
 
@@ -292,8 +323,12 @@ export const useRemoveField = () => {
       const { data } = await apiClient.delete(`/curriculum/fields/${fieldId}`)
       return data
     },
-    onSuccess: (_, variables) => {
+    onSuccess: () => {
       queryClient.invalidateQueries(['fields'])
+      toast.success('Field removed successfully')
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to remove field')
     },
   })
 }
@@ -307,7 +342,7 @@ export const useGetStudentQuizStats = (studentId) => {
       )
       return data
     },
-    enabled: !!studentId, // Only run when studentId is available
+    enabled: !!studentId,
   })
 }
 
@@ -318,24 +353,15 @@ export const useRemoveQuiz = () => {
       const { data } = await apiClient.delete(`/curriculum/quiz/${quizId}`)
       return data
     },
-    onSuccess: (_, variables) => {
+    onSuccess: () => {
       queryClient.invalidateQueries(['quizzes'])
+      toast.success('Quiz removed successfully')
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to remove quiz')
     },
   })
 }
-
-// export const useRemoveExam = () => {
-//   const queryClient = useQueryClient()
-//   return useMutation({
-//     mutationFn: async (examId) => {
-//       const { data } = await apiClient.delete(`/curriculum/exam/${examId}`)
-//       return data
-//     },
-//     onSuccess: (_, variables) => {
-//       queryClient.invalidateQueries(['exams'])
-//     },
-//   })
-// }
 
 export const useUpdateSubject = () => {
   const queryClient = useQueryClient()
@@ -351,6 +377,10 @@ export const useUpdateSubject = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['subjects'])
+      toast.success('Subject updated successfully')
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to update subject')
     },
   })
 }
@@ -366,6 +396,10 @@ export const useRemoveSubject = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['subjects'])
+      toast.success('Subject removed successfully')
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to remove subject')
     },
   })
 }
@@ -388,6 +422,10 @@ export const useCreateQuiz = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['quizzes'])
+      toast.success('Quiz created successfully')
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to create quiz')
     },
   })
 }
@@ -420,6 +458,10 @@ export const useAddMark = () => {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries(['examMarks', variables.examId])
+      toast.success('Mark added successfully')
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to add mark')
     },
   })
 }
@@ -443,6 +485,10 @@ export const useImportMarks = () => {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries(['examMarks', variables.examId])
+      toast.success('Marks imported successfully')
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to import marks')
     },
   })
 }
@@ -483,6 +529,10 @@ export const useUpdateMarkNotes = () => {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries(['examMarks', variables.examId])
+      toast.success('Notes updated successfully')
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to update notes')
     },
   })
 }
@@ -508,10 +558,14 @@ export const useCreateSession = () => {
         time,
         color,
       })
+      toast.success('Session created successfully')
       return data
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['sessions'])
+    },
+    onError: () => {
+      toast.error('Failed to create session')
     },
   })
 }
@@ -526,7 +580,11 @@ export const useDeleteSession = () => {
       return data
     },
     onSuccess: () => {
+      toast.success('Operation Successful!')
       queryClient.invalidateQueries(['sessions'])
+    },
+    onError: () => {
+      toast.error('Failed to delete session')
     },
   })
 }

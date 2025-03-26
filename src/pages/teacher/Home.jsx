@@ -63,6 +63,7 @@ import { Label } from '@/components/UI/label'
 import { Calendar } from '@/components/UI/calendar'
 import { format } from 'date-fns'
 import { useCreateQuiz } from '@/api/curriculumApi'
+import CourseAttendanceSummaryChart from '@/components/admin/CourseAttendanceSummaryChart'
 
 function Home() {
   const { data: dashboardData } = useGetTeacherDashboardData(1) // Replace with actual teacherId
@@ -301,15 +302,7 @@ function Home() {
       </div> */}
 
       <div className='partie-barchart-principal'>
-        <div className='partie-barchart'>
-          <div className='title-barchart'>
-            <h2>Course Attendance</h2>
-            <div>
-              <ComboboxDemo width='100px' />
-            </div>
-          </div>
-          <Barchart />
-        </div>
+        <CourseAttendanceSummaryChart />
 
         <Subjects />
       </div>

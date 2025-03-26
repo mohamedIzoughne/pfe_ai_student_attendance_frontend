@@ -223,7 +223,7 @@
 .partie-barchart {
   background-color: white;
   margin-top: 15px;
-  width: 597px;
+  /* width: 597px; */
   height: 375px;
   border-radius: 5px;
   padding: 15px;

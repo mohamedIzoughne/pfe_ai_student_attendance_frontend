@@ -2,6 +2,7 @@ import { useContext, useState } from 'react'
 import { Bell } from 'lucide-react'
 import manImage from '@/assets/images/man-438081_960_720.png'
 import manImage1 from '@/assets/images/More.png'
+import admin from '@/assets/images/admin.jpg'
 import {
   Popover,
   PopoverContent,
@@ -11,30 +12,51 @@ import { Context } from '@/store'
 
 const Header = () => {
   const { userConfiguration } = useContext(Context)
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      title: 'New Message',
-      description: 'John Doe sent you a message',
-      time: '2 minutes ago',
-      read: false,
-    },
-    {
-      id: 2,
-      title: 'Assignment Due',
-      description: 'Math homework is due tomorrow',
-      time: '1 hour ago',
-      read: false,
-    },
-    {
-      id: 3,
-      title: 'System Update',
-      description: 'New features available',
-      time: '2 hours ago',
-      read: false,
-    },
-  ])
-
+  const [notifications, setNotifications] = useState(
+    userConfiguration.role === 'admin'
+      ? [
+          {
+            id: 1,
+            title: 'New Teacher Registration',
+            description: 'Teacher John Smith has registered and needs approval',
+            time: '5 minutes ago',
+            read: false,
+          },
+          {
+            id: 2,
+            title: 'System Update',
+            description: 'New features have been added to the platform',
+            time: '1 hour ago',
+            read: false,
+          },
+        ]
+      : userConfiguration.role === 'teacher'
+      ? [
+          {
+            id: 1,
+            title: 'New Assignment Submitted',
+            description: 'Student Sarah Jones has submitted their assignment',
+            time: '10 minutes ago',
+            read: false,
+          },
+          {
+            id: 2,
+            title: 'Class Schedule Update',
+            description: 'Your next class has been rescheduled',
+            time: '2 hours ago',
+            read: false,
+          },
+        ]
+      : [
+          {
+            id: 2,
+            title: 'Grade Posted',
+            description: 'Your grade for English assignment has been posted',
+            time: '3 hours ago',
+            read: false,
+          },
+        ]
+  )
   const unreadCount = notifications.filter((notif) => !notif.read).length
 
   const handleNotificationClick = (id) => {
@@ -80,12 +102,18 @@ const Header = () => {
             </div>
           </PopoverContent>
         </Popover>
-        <img className='img2' src={manImage} alt='' />
+        <img className='img2' src={admin} alt='' />
+        {/* <img className='img2' src={manImage} alt='' /> */}
         <div className='mini-div'>
-          <span>Mohamed Aloui</span>
-          <h4>{userConfiguration.role[0].toUpperCase() + userConfiguration.role.slice(1)}</h4>
+          <span>Ahmed Arami</span>
+          {/* <span>Mohamed Aloui</span> */}
+          <h4>
+            {userConfiguration.role[0].toUpperCase() +
+              userConfiguration.role.slice(1)}
+          </h4>
         </div>
         <img className='img3' src={manImage1} alt='' />
+        {/* <img className='img3' src={admin} alt='' /> */}
       </div>
     </>
   )

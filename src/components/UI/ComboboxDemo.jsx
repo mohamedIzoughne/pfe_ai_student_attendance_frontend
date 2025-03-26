@@ -30,17 +30,17 @@ export function ComboboxDemo({
   const [selectedOption, setSelectedOption] = useState({})
 
   return (
-    <Popover  open={isOpen} onOpenChange={setIsOpen}>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <Button
           variant='outline'
           role='combobox'
           aria-expanded={isOpen}
-          className={'flex items-center justify-between px-4 py-2 '+ className}
+          className={'flex items-center justify-between px-4 py-2 ' + className}
           style={{ width }}
         >
           <span className='truncate'>
-            {selectedOption.name
+            {selectedOption.id
               ? options.find((option) => option.id === selectedOption.id)?.name
               : placeholder}
           </span>
@@ -56,9 +56,10 @@ export function ComboboxDemo({
               {options.map((option) => (
                 <CommandItem
                   key={option.id}
-                  value={option.name}
+                  value={String(option.id)}
                   onSelect={(currentValue) => {
-                    const newSelectedOption = currentValue === selectedOption.name ? {} : option
+                    const newSelectedOption =
+                      currentValue === String(selectedOption.id) ? {} : option
                     setSelectedOption(newSelectedOption)
                     setIsOpen(false)
                     onSelect(newSelectedOption)
@@ -68,7 +69,7 @@ export function ComboboxDemo({
                   <Check
                     className={cn(
                       'ml-auto',
-                      selectedOption.name === option.name
+                      selectedOption.id === option.id
                         ? 'opacity-100'
                         : 'opacity-0'
                     )}

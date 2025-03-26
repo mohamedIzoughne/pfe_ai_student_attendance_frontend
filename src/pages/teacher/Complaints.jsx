@@ -99,16 +99,19 @@ const Complaints = () => {
             <ComboboxDemo
               onSelect={setSelectedCourse}
               options={courses}
-              placeholder='Course'
-              width='100px'
+              placeholder='Class'
+              width='150px'
             />
           </div>
           <div>
             <ComboboxDemo
               onSelect={setSelectedSession}
-              options={sessions}
+              options={sessions?.map((session) => ({
+                name: `${session.name} (${session.day.slice(0, 3)})`,
+                id: session.id,
+              }))}
               placeholder='Session'
-              width='120px'
+              width='200px'
             />
           </div>
         </div>

@@ -47,6 +47,7 @@ import {
 } from '@/components/ui/dialog'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
+import { ComboboxDemo } from '@/components/UI/ComboboxDemo'
 
 const SOCKET_SERVER_URL = 'http://localhost:5000' // Change this if needed
 const Options = ({ width = '200px', setStudents, newStudents = [] }) => {
@@ -56,29 +57,39 @@ const Options = ({ width = '200px', setStudents, newStudents = [] }) => {
   const [selectedCourse, setSelectedCourse] = useState({})
   const { data: courses = [] } = useGetCourses(1, 'teacher')
   const { data: sessions = [] } = useGetSessions(selectedCourse.id)
+  console.log('SESSSSSSions', sessions)
   const { data: students } = useStudentsAttendances(
     selectedCourse.id,
     selectedSession.id
   )
   const [buttonIsClicked, setButtonIsClicked] = useState(false)
   const [isErrorDialogOpen, setIsErrorDialogOpen] = useState(false)
-  const {
-    data: attendances,
-    isLoading,
-    isError,
-    isSuccess,
-  } = useCheckClassStudents(selectedCourse.id, buttonIsClicked)
+  const { data: attendances, isLoading, isSuccess, isError } = useCheckClassStudents(
+    selectedCourse.id,
+    buttonIsClicked
+  )
 
-  useEffect(() => {
-    if (isError) {
-      toast.error('An error occurred')
-      setButtonIsClicked(false)
-    } else if (isSuccess) {
-      toast.error('Scanning finished successfully')
-    }
-  }, [isError, isSuccess])
+  // useEffect(() => {
+  //   if (isError) {
+  //     toast.error('An error occurred')
+  //     setButtonIsClicked(false)
+  //   } else if (isSuccess) {
+  //     const updatedStudents = attendances?.reduce((acc, { studentId }) => {
+  //       return acc.map((student) => 
+  //         student.id === studentId 
+  //           ? { ...student, isPresent: true }
+  //           : student
+  //       )
+  //     }, newStudents)
+      
+  //     if (updatedStudents) {
+  //       setStudents(updatedStudents)
+  //     }      
+  //     toast.success('Scanning finished successfully')
+  //   }
+  // }, [isError, isSuccess])
 
-  const { mutate: saveAttendance, isLoading: isSaving } =
+  const { mutate: saveAttendance, isLoading: isSaving } = 
     useSaveStudentAttendances()
 
   const handleClickButton = () => {
@@ -151,7 +162,7 @@ const Options = ({ width = '200px', setStudents, newStudents = [] }) => {
                   {selectedCourse.name
                     ? courses.find((course) => course.id === selectedCourse.id)
                         ?.name
-                    : 'Select course...'}
+                    : 'Select class...'}
                 </span>
 
                 <ChevronsUpDown className='h-4 w-4 opacity-50 ml-2' />
@@ -159,9 +170,9 @@ const Options = ({ width = '200px', setStudents, newStudents = [] }) => {
             </PopoverTrigger>
             <PopoverContent className='p-0' style={{ width }}>
               <Command>
-                <CommandInput placeholder='Search course...' className='h-9' />
+                <CommandInput placeholder='Search class...' className='h-9' />
                 <CommandList>
-                  <CommandEmpty>No course found.</CommandEmpty>
+                  <CommandEmpty>No class found.</CommandEmpty>
                   <CommandGroup>
                     {courses.map((course) => (
                       <CommandItem
@@ -192,7 +203,16 @@ const Options = ({ width = '200px', setStudents, newStudents = [] }) => {
           </Popover>
         </div>
         <div>
-          <Popover open={isSessionsOpen} onOpenChange={setIsSessionsOpen}>
+          <ComboboxDemo
+            onSelect={setSelectedSession}
+            options={sessions?.map((session) => ({
+              name: `${session.name} (${session.day.slice(0, 3)})`,
+              id: session.id,
+            }))}
+            placeholder='Session'
+            width='200px'
+          />
+          {/* <Popover open={isSessionsOpen} onOpenChange={setIsSessionsOpen}>
             <PopoverTrigger asChild>
               <Button
                 variant='outline'
@@ -202,7 +222,7 @@ const Options = ({ width = '200px', setStudents, newStudents = [] }) => {
                 style={{ width: '200px' }}
               >
                 <span className='truncate'>
-                  {selectedSession.name
+                  {selectedSession?.id
                     ? sessions.find(
                         (session) => session.id === selectedSession.id
                       )?.name
@@ -220,10 +240,10 @@ const Options = ({ width = '200px', setStudents, newStudents = [] }) => {
                     {sessions.map((session) => (
                       <CommandItem
                         key={session.id}
-                        value={session.name}
+                        value={session.id}
                         onSelect={(currentValue) => {
                           setSelectedSession(
-                            currentValue === selectedSession.name ? {} : session
+                            currentValue === selectedSession.id ? {} : session
                           )
                           setIsSessionsOpen(false)
                         }}
@@ -243,7 +263,7 @@ const Options = ({ width = '200px', setStudents, newStudents = [] }) => {
                 </CommandList>
               </Command>
             </PopoverContent>
-          </Popover>
+          </Popover> */}
         </div>
         <div className='flex gap-2'>
           <div className='relative min-w-32'>
@@ -316,7 +336,6 @@ const AttendanceMarking = () => {
 
     newSocket.on('student_detected', (data) => {
       console.log('Received:', data)
-      console.log(new Date())
       setStudents((prevStudents) => {
         const updatedStudents = prevStudents.map((student) => {
           if (student.id === data.studentId) {
@@ -366,8 +385,8 @@ const AttendanceMarking = () => {
 
       <div className='div-center'>
         <div>
-          <Input 
-            placeholder='Search Student name' 
+          <Input
+            placeholder='Search Student name'
             value={searchQuery}
             onChange={handleSearch}
           />
@@ -390,8 +409,14 @@ const AttendanceMarking = () => {
         <tbody>
           {filteredStudents.map((student) => (
             <tr className='py-5' key={student.id}>
-              <td className='object-cover'>
-                <img src={`${API_URL}/${student.image}`} alt='' />
+              <td>
+                <div>
+                  <img
+                    className='w-full h-full object-cover'
+                    src={`${API_URL}/${student.image}`}
+                    alt=''
+                  />
+                </div>
               </td>
               <td>{student.name}</td>
               <td>{student.id}</td>

@@ -15,6 +15,7 @@ import { ComboboxDemo } from '../UI/ComboboxDemo'
 import { useGetTeacherSubjectsByCourse } from '@/api/UsersApi'
 import { useGetTeacherSessions, useDeleteSession } from '@/api/curriculumApi'
 import { useGetCourses } from '@/api/curriculumApi'
+import { toast } from 'sonner'
 
 const TeacherSchedule = () => {
   const days = [
@@ -50,13 +51,27 @@ const TeacherSchedule = () => {
   const deleteSession = useDeleteSession()
   const { data: sessions } = useGetTeacherSessions(1)
   // const { data: courses } = useGetTeacherCourses(1)
-  const { data: courses } = useGetCourses(1, 'teacher')
+  const { data: courses } = useGetCourses(1, 'admin') // for adding session we should get all courses
   const { data: subjects } = useGetTeacherSubjectsByCourse(
     1,
     sessionFormData?.selectedCourse?.id
   )
 
-  console.log('-----The-Subjects--------', subjects)
+  // if(createSession.isSuccess) {
+    // toast.success('Session created successfully')
+  // }
+
+  // if(createSession.isError) {
+  //   toast.error('Failed to create session')
+  // }
+
+  // if(deleteSession.isSuccess) {
+  //   toast.success('Session deleted successfully')
+  // }
+
+  // if(deleteSession.isError) {
+  //   toast.error('Failed to delete session')
+  // }
 
   const handleAddClick = (day, time) => {
     setSelectedDay(day)
@@ -188,7 +203,7 @@ const TeacherSchedule = () => {
                 htmlFor='courseSelect'
                 className='mt-2 text-xs mb-1 ml-[2px]'
               >
-                Select Course
+                Select Class
               </Label>
               <ComboboxDemo
                 id='courseSelect'
@@ -196,7 +211,7 @@ const TeacherSchedule = () => {
                 onSelect={(selected) =>
                   handleEditingSession({ selectedCourse: selected })
                 }
-                placeholder='Select Course'
+                placeholder='Select Class'
                 options={courses}
                 // value={sessionFormData.selectedCourse}
               />

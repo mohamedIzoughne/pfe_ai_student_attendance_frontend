@@ -65,8 +65,9 @@ const WeeklyAttendanceChart = () => {
             <ComboboxDemo
               onSelect={setSelectedCourse}
               options={courses}
-              placeholder='Course'
+              placeholder='Class'
               width='130px'
+              className='mr-1'
             />
             <ComboboxDemo
               onSelect={setSelectedWeek}

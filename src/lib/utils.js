@@ -1,6 +1,6 @@
 import { clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
-
+import { toast } from 'sonner'
 export function cn(...inputs) {
   return twMerge(clsx(inputs))
 }
@@ -41,7 +41,6 @@ export function formatDate(dateString) {
   return dateObj.toLocaleDateString('en-US', options)
 }
 
-
 export function formatDateWithoutYear(dateString) {
   const dateObj = new Date(dateString)
 
@@ -52,10 +51,15 @@ export function formatDateWithoutYear(dateString) {
 export function formatMinutes(minutes) {
   const hours = Math.floor(minutes / 60)
   const remainingMinutes = minutes % 60
-  
+
   if (remainingMinutes === 0) {
     return `${hours}h`
   }
-  
+
   return `${hours}h${remainingMinutes}m`
+}
+
+export const showToast = (type, message) => {
+
+  toast[type](message)
 }

@@ -15,6 +15,7 @@ import { default as StudentHome } from './pages/student/Home'
 
 import ExamMarks from './pages/teacher/ExamMarks'
 import ImageCutter from './pages/student/ImageCutter'
+import ImageCropper from './pages/ImageCropper'
 // import RegisterUser from './pages/RegisterUser'
 
 const routes = [
@@ -40,7 +41,7 @@ const routes = [
   },
   { path: 'exams', element: <Exams />, roles: ['admin', 'teacher'] },
   { path: 'teachers/:teacherId?', element: <Teachers />, roles: ['admin'] },
-  { path: 'courses', element: <Courses />, roles: ['admin'] },
+  { path: 'classes', element: <Courses />, roles: ['admin'] },
   {
     path: 'exams/exam-marks/:examId',
     element: <ExamMarks />,
@@ -55,6 +56,11 @@ const authRoutes = [
     path: '/on-boarding',
     element: <OnBoarding />,
     roles: ['admin', 'teacher'],
+  },
+  {
+    path: '/image-cut',
+    element: <ImageCropper />,
+    roles: ['admin', 'teacher', 'student'],
   },
 ]
 

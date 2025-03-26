@@ -175,7 +175,10 @@ const Exams = () => {
     <>
       <Header />
       <div className='title'>
-        <h3>Exams</h3>
+        <h3> Exams </h3>
+        <div className='vide'>
+          <div className='vide-vide'></div>
+        </div>
       </div>
 
       <div className='buttons'>
@@ -202,15 +205,15 @@ const Exams = () => {
         </div>
         <div>
           <ComboboxDemo
-            width='100%'
+            width='150px'
             options={courses}
             onSelect={setSelectedCourse}
-            placeholder='Select Course'
+            placeholder='Select Class'
           />
         </div>
         <div>
           <ComboboxDemo
-            width='100%'
+            width='150px'
             options={subjects}
             onSelect={setSelectedSubject}
             placeholder='Select Subject'
@@ -295,7 +298,7 @@ const Exams = () => {
                   htmlFor='courseSelect'
                   className='mt-2 text-xs mb-1 ml-[2px]'
                 >
-                  Select Course
+                  Select Class
                 </Label>
                 <ComboboxDemo
                   id='courseSelect'
@@ -303,7 +306,7 @@ const Exams = () => {
                   onSelect={(selected) =>
                     handleEditingExam({ selectedCourse: selected })
                   }
-                  placeholder='Select Course'
+                  placeholder='Select Class'
                   options={courses}
                   value={examFormData.selectedCourse}
                 />

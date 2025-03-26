@@ -62,7 +62,7 @@ body {
   font-family: 'Nunito Sans', serif;
 }
 
-.Table-record tr:not(:first-child) {
+.Table-record tr:not(thead tr) {
   height: 122px;
 }
 

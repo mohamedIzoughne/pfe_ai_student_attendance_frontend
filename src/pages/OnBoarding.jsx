@@ -520,7 +520,7 @@ const UserProfileScreen = () => {
                   </Select>
                 </div>
                 <div className='space-y-2'>
-                  <Label htmlFor='course'>Course</Label>
+                  <Label htmlFor='course'>Class</Label>
                   <ComboboxDemo
                     placeholder='Select course'
                     onSelect={(selected) =>

@@ -73,6 +73,8 @@ function StudentDetails({ studentId }) {
   const editStudent = useEditStudent(studentId)
   const { data: studentAttendanceRate } = useGetStudentAttendanceRate(studentId)
 
+  console.log('---------------complaints ------------', complaints)
+
   if (!studentId) {
     return (
       <div className='flex flex-col items-center justify-center h-full min-h-[50vh] px-4 mx-auto mt-20'>
@@ -151,76 +153,78 @@ function StudentDetails({ studentId }) {
         <div className='std-info '>
           <div className='st-info-header'>
             <h2>Personal info</h2>
-            <Dialog
-              open={isEditing}
-              onOpenChange={setIsEditing}
-              onClose={() => setIsEditing(false)}
-            >
-              <DialogTrigger>
-                <FiEdit3 className='mx-6 my-2 cursor-pointer' />
-              </DialogTrigger>
-              <DialogContent>
-                <form onSubmit={saveChanges}>
-                  <DialogHeader>
-                    <DialogTitle>Edit Personal Information</DialogTitle>
-                  </DialogHeader>
-                  <div className='grid gap-4 py-4'>
-                    <div className='grid grid-cols-4 items-center gap-4'>
-                      <Label htmlFor='fullName' className='text-right'>
-                        Full Name
-                      </Label>
-                      <Input
-                        id='fullName'
-                        name='fullName'
-                        defaultValue={userInfo?.fullName}
-                        className='col-span-3'
-                      />
+            {!isTeacher && (
+              <Dialog
+                open={isEditing}
+                onOpenChange={setIsEditing}
+                onClose={() => setIsEditing(false)}
+              >
+                <DialogTrigger>
+                  <FiEdit3 className='mx-6 my-2 cursor-pointer' />
+                </DialogTrigger>
+                <DialogContent>
+                  <form onSubmit={saveChanges}>
+                    <DialogHeader>
+                      <DialogTitle>Edit Personal Information</DialogTitle>
+                    </DialogHeader>
+                    <div className='grid gap-4 py-4'>
+                      <div className='grid grid-cols-4 items-center gap-4'>
+                        <Label htmlFor='fullName' className='text-right'>
+                          Full Name
+                        </Label>
+                        <Input
+                          id='fullName'
+                          name='fullName'
+                          defaultValue={userInfo?.fullName}
+                          className='col-span-3'
+                        />
+                      </div>
+                      <div className='grid grid-cols-4 items-center gap-4'>
+                        <Label htmlFor='phoneNumber' className='text-right'>
+                          Phone Number
+                        </Label>
+                        <Input
+                          id='phoneNumber'
+                          name='phoneNumber'
+                          defaultValue={userInfo?.phoneNumber}
+                          className='col-span-3'
+                        />
+                      </div>
+                      <div className='grid grid-cols-4 items-center gap-4'>
+                        <Label htmlFor='email' className='text-right'>
+                          Email
+                        </Label>
+                        <Input
+                          id='email'
+                          name='email'
+                          defaultValue={userInfo?.email}
+                          className='col-span-3'
+                        />
+                      </div>
+                      <div className='grid grid-cols-4 items-center gap-4'>
+                        <Label htmlFor='hometown' className='text-right'>
+                          Hometown
+                        </Label>
+                        <Input
+                          id='hometown'
+                          name='hometown'
+                          defaultValue={userInfo?.hometown}
+                          className='col-span-3'
+                        />
+                      </div>
                     </div>
-                    <div className='grid grid-cols-4 items-center gap-4'>
-                      <Label htmlFor='phoneNumber' className='text-right'>
-                        Phone Number
-                      </Label>
-                      <Input
-                        id='phoneNumber'
-                        name='phoneNumber'
-                        defaultValue={userInfo?.phoneNumber}
-                        className='col-span-3'
-                      />
-                    </div>
-                    <div className='grid grid-cols-4 items-center gap-4'>
-                      <Label htmlFor='email' className='text-right'>
-                        Email
-                      </Label>
-                      <Input
-                        id='email'
-                        name='email'
-                        defaultValue={userInfo?.email}
-                        className='col-span-3'
-                      />
-                    </div>
-                    <div className='grid grid-cols-4 items-center gap-4'>
-                      <Label htmlFor='hometown' className='text-right'>
-                        Hometown
-                      </Label>
-                      <Input
-                        id='hometown'
-                        name='hometown'
-                        defaultValue={userInfo?.hometown}
-                        className='col-span-3'
-                      />
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <DialogClose asChild>
-                      <Button type='button' variant='outline'>
-                        Cancel
-                      </Button>
-                    </DialogClose>
-                    <Button type='submit'>Save changes</Button>
-                  </DialogFooter>
-                </form>
-              </DialogContent>
-            </Dialog>
+                    <DialogFooter>
+                      <DialogClose asChild>
+                        <Button type='button' variant='outline'>
+                          Cancel
+                        </Button>
+                      </DialogClose>
+                      <Button type='submit'>Save changes</Button>
+                    </DialogFooter>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            )}
           </div>
 
           <div className='Inpt-infos '>
@@ -241,7 +245,7 @@ function StudentDetails({ studentId }) {
 
             <div className='col-12 col-md-6 w-1/2'>
               <div>
-                <label htmlFor=''>Course</label>
+                <label htmlFor=''>Class</label>
                 <div className='information'>{userInfo?.course}</div>
               </div>
 
@@ -411,7 +415,7 @@ function Students() {
         <ComboboxDemo
           onSelect={setSelectedCourse}
           options={courses}
-          placeholder='Course'
+          placeholder='Class'
           width='150px'
         />
       </div>
@@ -472,8 +476,6 @@ const StudentsList = ({ courseId, onSelect }) => {
   const [searchTerm, setSearchTerm] = useState('')
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
   const { data: students } = useSearchStudents(debouncedSearchTerm, courseId)
-
-  console.log('The student id..........', studentId)
 
   useEffect(() => {
     const timer = setTimeout(() => {

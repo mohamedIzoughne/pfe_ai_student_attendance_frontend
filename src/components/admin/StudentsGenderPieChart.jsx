@@ -105,9 +105,9 @@ const StudentsPieChartComponent = ({
         <h4 className='h4-2'>Total Students by Gender</h4>
         <div>
           <ComboboxDemo
-            placeholder='course'
+            placeholder='class'
             className='comboButton'
-            width='105px'
+            width='130px'
             options={courses}
             onSelect={setSelectedCourse}
           />

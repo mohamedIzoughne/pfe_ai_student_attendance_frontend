@@ -112,7 +112,7 @@ const Courses = () => {
       <Header />
 
       <div className='title'>
-        <h3> Courses </h3>
+        <h3> Classes </h3>
         <div className='vide'>
           <div className='vide-vide'></div>
         </div>
@@ -121,7 +121,7 @@ const Courses = () => {
       <div className='div-center items-center'>
         <div>
           <Input
-            placeholder='Search by course name'
+            placeholder='Search by class name'
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -135,11 +135,11 @@ const Courses = () => {
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Add New Course</DialogTitle>
+                <DialogTitle>Add New Class</DialogTitle>
               </DialogHeader>
               <div className='grid gap-4 py-4'>
                 <div className='grid grid-cols-4 items-center gap-4'>
-                  <Label>Course Name</Label>
+                  <Label>Class Name</Label>
                   <Input
                     value={newCourse.name}
                     onChange={(e) =>
@@ -224,7 +224,7 @@ const Courses = () => {
 
       <table className='table-admin'>
         <tr>
-          <th className='rounded-tl-xl'>Course name</th>
+          <th className='rounded-tl-xl'>Class name</th>
           <th>Grade</th>
           <th>Capacity</th>
           <th>Supervisor</th>
@@ -253,11 +253,11 @@ const Courses = () => {
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Edit Course</DialogTitle>
+                      <DialogTitle>Edit Class</DialogTitle>
                     </DialogHeader>
                     <div className='grid gap-4 py-4'>
                       <div className='grid grid-cols-4 items-center gap-4'>
-                        <Label>Course Name</Label>
+                        <Label>Class Name</Label>
                         <Input
                           value={editingCourse?.name || ''}
                           onChange={(e) =>
@@ -346,9 +346,9 @@ const Courses = () => {
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Delete Course</DialogTitle>
+                      <DialogTitle>Delete Class</DialogTitle>
                       <DialogDescription>
-                        Are you sure you want to delete this course? This action
+                        Are you sure you want to delete this class? This action
                         cannot be undone.
                       </DialogDescription>
                     </DialogHeader>

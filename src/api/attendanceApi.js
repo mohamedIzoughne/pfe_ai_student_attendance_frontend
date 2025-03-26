@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiClient } from './apiClient'
+import { toast } from 'sonner'
 
 export const useStudentsAttendances = (courseId, sessionId = null) => {
   return useQuery({
@@ -25,26 +26,26 @@ export const useCheckClassStudents = (classId, isClicked, options = {}) => {
   return useQuery({
     queryKey: ['check-class-students', classId],
     queryFn: async () => {
-      const { data } = await apiClient.post(
-        '/attendance/check-class-students',
-        {
-          classId,
-        }
-      )
-      return data
+      const promise = apiClient.post('/attendance/check-class-students', {
+        classId,
+      })
+
+      return toast.promise(promise, {
+        position: 'bottom-right',
+        loading: 'Recording...',
+        success: (data) => {
+          return `${data.data.name} toast has been added`
+        },
+        error: 'Failed to mark attendances',
+      })
     },
     enabled: !!classId && isClicked,
-    // ...options,
-    // onError: () => {
-    //   console.log('Error fetching students')
-    // }, // Spreading other options
-
-    // Ensure these options are passed
-    // onSettled: options.onSettled,
-    // onError: options.onError,
+    staleTime: 60000, // 1 minute
+    cacheTime: 60000, // 1 minute
+    retry: false,
+    retryDelay: 60000, // 1 minute
   })
 }
-
 export const useSaveStudentAttendances = () => {
   return useMutation({
     mutationFn: async (attendanceData) => {
@@ -53,6 +54,12 @@ export const useSaveStudentAttendances = () => {
         attendanceData
       )
       return data
+    },
+    onSuccess: () => {
+      toast.success('Attendances saved successfully')
+    },
+    onError: (error) => {
+      toast.error('Failed to save attendances: ' + error.message)
     },
   })
 }
@@ -68,7 +75,6 @@ export const useGetWeeklyAttendance = (courseId) => {
       )
       return data
     },
-    // enabled: !!courseId,
   })
 }
 
@@ -91,14 +97,18 @@ export const useGetTeacherWeeklyAttendance = (
   })
 }
 
-export const useGetCoursesAttendanceSummary = (weekNumber) => {
+export const useGetCoursesAttendanceSummary = (weekNumber, teacherId) => {
   return useQuery({
-    queryKey: ['coursesAttendanceSummary', weekNumber],
+    queryKey: ['coursesAttendanceSummary', weekNumber, teacherId],
     queryFn: async () => {
       const { data } = await apiClient.get(
-        `/attendance/courses-attendance-summary${
-          weekNumber ? `weekNumber=${weekNumber}` : ''
-        }`
+        teacherId
+          ? `/attendance/teacher-courses-attendance-summary/${teacherId}?${
+              weekNumber ? `weekNumber=${weekNumber}` : ''
+            }`
+          : `/attendance/courses-attendance-summary?${
+              weekNumber ? `weekNumber=${weekNumber}` : ''
+            }`
       )
       return data
     },
@@ -132,55 +142,66 @@ export const useGetComplaints = (teacherId, sessionId, courseId) => {
     enabled: !!teacherId,
   })
 }
-  export const useRefuseComplaint = () => {
-    const queryClient = useQueryClient()
-    return useMutation({
-      mutationFn: async ( complaintId ) => {
-        const { data } = await apiClient.delete(
-          `/attendance/complaints/${complaintId}`
-        )
-        return data
-      },
-      onSuccess: () => {
-        queryClient.invalidateQueries(['complaints'])
-      },
-    })
-  }
 
-  export const useAcceptComplaint = () => {
-    const queryClient = useQueryClient()
-    return useMutation({
-      mutationFn: async ( complaintId ) => {
-        const { data } = await apiClient.put(
-          `/attendance/complaints/${complaintId}/accept`
-        )
-        return data
-      },
-      onSuccess: () => {
-        queryClient.invalidateQueries(['complaints'])
-      },
-    })
-  }
+export const useRefuseComplaint = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (complaintId) => {
+      const { data } = await apiClient.delete(
+        `/attendance/complaints/${complaintId}`
+      )
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['complaints'])
+      toast.success('Complaint refused successfully')
+    },
+    onError: (error) => {
+      toast.error('Failed to refuse complaint: ' + error.message)
+    },
+  })
+}
 
-  export const useGetStudentLastWeekAttendance = (studentId) => {
-    return useQuery({
-      queryKey: ['studentLastWeekAttendance', studentId],
-      queryFn: async () => {
-        const { data } = await apiClient.get(
-          `/attendance/students/${studentId}/last-week-attendance`
-        )
-        return data
-      },
-      enabled: !!studentId,
-    })
-  }
+export const useAcceptComplaint = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (complaintId) => {
+      const { data } = await apiClient.put(
+        `/attendance/complaints/${complaintId}/accept`
+      )
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['complaints'])
+      toast.success('Complaint accepted successfully')
+    },
+    onError: (error) => {
+      toast.error('Failed to accept complaint: ' + error.message)
+    },
+  })
+}
+
+export const useGetStudentLastWeekAttendance = (studentId) => {
+  return useQuery({
+    queryKey: ['studentLastWeekAttendance', studentId],
+    queryFn: async () => {
+      const { data } = await apiClient.get(
+        `/attendance/students/${studentId}/last-week-attendance`
+      )
+      return data
+    },
+    enabled: !!studentId,
+  })
+}
 
 export const useGetStudentAttendanceRate = (studentId, subjectId) => {
   return useQuery({
     queryKey: ['studentAttendanceRate', studentId, subjectId],
     queryFn: async () => {
       const { data } = await apiClient.get(
-        `/attendance/students/${studentId}/attendance-rate${subjectId ? `?studentId=${subjectId}` : ''}`
+        `/attendance/students/${studentId}/attendance-rate${
+          subjectId ? `?studentId=${subjectId}` : ''
+        }`
       )
       return data
     },
@@ -212,6 +233,10 @@ export const useDeleteComplaint = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['studentComplaints'])
+      toast.success('Complaint deleted successfully')
+    },
+    onError: (error) => {
+      toast.error('Failed to delete complaint: ' + error.message)
     },
   })
 }
@@ -228,6 +253,10 @@ export const useUpdateComplaint = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['studentComplaints'])
+      toast.success('Complaint updated successfully')
+    },
+    onError: (error) => {
+      toast.error('Failed to update complaint: ' + error.message)
     },
   })
 }
@@ -244,8 +273,10 @@ export const useAddComplaint = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['studentComplaints'])
+      toast.success('Complaint added successfully')
+    },
+    onError: (error) => {
+      toast.error('Failed to add complaint: ' + error.message)
     },
   })
 }
-
-

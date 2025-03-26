@@ -5,11 +5,15 @@ import { SlHome } from 'react-icons/sl'
 import { FaRegFlag } from 'react-icons/fa6'
 import { PiStudent } from 'react-icons/pi'
 import { LuNotebookText, LuBookOpenText } from 'react-icons/lu'
+import logo1 from '../assets/images/logo.png'
+import { GiTeacher } from "react-icons/gi";
+import { LiaChalkboardTeacherSolid } from "react-icons/lia";
+
 
 const sidebarTermsIcons = {
   Home: SlHome,
-  Teachers: SlHome,
-  Courses: SlHome,
+  Teachers: LiaChalkboardTeacherSolid,
+  Classes: GiTeacher,
   'Mark attendance': FaRegFlag,
   Exams: LuBookOpenText,
   Students: PiStudent,
@@ -74,7 +78,7 @@ const Sidebar = () => {
         { title: 'Home', path: '/' },
         { title: 'Students', path: '/students' },
         { title: 'Teachers', path: '/teachers' },
-        { title: 'Courses', path: '/courses' },
+        { title: 'Classes', path: '/classes' },
       ]
     } else {
       return [
@@ -89,7 +93,10 @@ const Sidebar = () => {
 
   return (
     <div className='bg-white text-[#202224]'>
-      <nav className='mt-48'>
+      <div className='logo w-[160px] mx-auto mt-20'>
+        <img src={logo1} alt='' />
+      </div>
+      <nav className=''>
         <ul style={{ listStyle: 'none', padding: 0, color: 'white' }}>
           {sidebarItems.map(({ title, path }) => (
             <SidebarItem key={title} title={title} path={path} />

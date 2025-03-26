@@ -85,7 +85,7 @@ function StatsSection({ dashboardStats }) {
       </div>
       <div className='div1 div1-ad'>
         <div>
-          <h3>Total Courses</h3>
+          <h3>Total Classes</h3>
           <span>{dashboardStats.totalCourses}</span>
         </div>
         <img src={manImage11} alt='' />
